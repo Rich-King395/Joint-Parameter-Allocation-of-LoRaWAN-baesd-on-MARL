@@ -2,9 +2,9 @@
     LoRaWAN Parameters
 """
 import numpy as np
-import math
 import simpy
 import matplotlib.pyplot as plt
+import torch
 # turn on/off graphics
 graphics = 1
 
@@ -32,35 +32,58 @@ sensi = np.array([sf7,sf8,sf9,sf10,sf11,sf12])
 # minimum SNR required for demodulation at different spreading factors
 SNR_Req = np.array([-7.5,-10,-12.5,-15,-17.5,-20])
 
-Carrier_Frequency = np.array([867100000,867300000,867500000,867700000,
-                       867900000,868100000,868300000,868500000])
+Bandwidth = np.array([125,250,500])
+SF = np.array([7,8,9,10,11,12])
+Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 100
+nrNodes = 50
 nrBS = 1
 radius = 2000
 PayloadSize = 65
-avgSendTime = 5000
+avgSendTime = 2000
 allocation_type = "Local"
-allocation_method = "random"
+allocation_method = "MARL"
 nrNetworks = 1
-simtime = 3600000 * 24
+simtime = 3600000
 directionality = 1
 full_collision = 1
 
 # global stuff
+update_interval = 100000 # configuration update time of MAA2C
+interval_flag = 0
+total_simtime = 0
+
 nodes = [] # list of nodes
 env = simpy.Environment() # simulation environment
 
-# max distance: 300m in city, 3000 m outside (5 km Utz experiment)
-# also more unit-disc like according to Utz
-
+# list of base stations
+bs = []
+# Packets sent to each GW
+packetsAtBS = [] 
+# Packets received by each GW
+packetsRecBS = [] 
 # list of received packets
 recPackets=[]
 # list of collided packets
 collidedPackets=[]
 # list of lost packets
 lostPackets = []
+
+RecPacketSize = 0
+TotalPacketSize = 0
+TotalPacketAirtime = 0
+TotalEnergyConsumption = 0
+
+# number of sent packets during update interval 
+sentPackets_interval = 0
+# number of received packets during update interval 
+recPackets_interval = 0
+# number of not received packets during update interval
+lostPackets_interval = 0
+
+global_observation = []
+next_global_observation = []
 
 # global value of packet sequence numbers
 packetSeq = 0
@@ -78,10 +101,6 @@ if (graphics == 1):
     plt.figure()
     ax = plt.gcf().gca()
 
-# list of base stations
-bs = []
-packetsAtBS = [] # Packets sent to each GW
-packetsRecBS = [] # Packets received by each GW
 
 class LoRaParameters:
     sf = 9
@@ -91,4 +110,18 @@ class LoRaParameters:
     fre = 868000000
     PayloadSize = PayloadSize
 
-        
+class MAA2C_Config:
+    num_agents = nrNodes
+    dim_local_observation = 12 
+    dim_global_observation = dim_local_observation * nrNodes
+    dim_action_sf = SF.size
+    dim_action_bw = Bandwidth.size
+    dim_action_fre = Carrier_Frequency.size
+    discount = 0.99 # discount coefficient
+    num_episode = 1500
+    receive_reward = 10
+    lost_reward = -5
+    fairness_weight = 0.5
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+    

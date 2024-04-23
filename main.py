@@ -36,7 +36,8 @@ if __name__ == "__main__":
     simulation.simstarttime = datetime.now()
     simulation.run()
     simulation.simendtime = datetime.now()
-    simulation.results_calculation()
-    simulation.results_show()
-    simulation.simulation_record()
+    if allocation_method != "MARL":
+        simulation.results_calculation()
+        simulation.results_show()
+        simulation.simulation_record()
     

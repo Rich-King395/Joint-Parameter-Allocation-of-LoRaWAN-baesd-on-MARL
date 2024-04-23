@@ -45,7 +45,7 @@ def checkcollision(packet):
 def frequencyCollision(p1,p2):
     if (abs(p1.fre-p2.fre)<=120 and (p1.bw==500 or p2.fre==500)):#Bandwodth=500kHz
         return True
-    elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.fre==250)):#Bandwidth=200kHz
+    elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.fre==250)):#Bandwidth=250kHz
         return True
     else:
         if (abs(p1.fre-p2.fre)<=30):

@@ -2,10 +2,9 @@
 # this file creates a packet (associated with a node)
 # it also sets all parameters, currently random
 #
-import random
 from ParameterConfig import *
 from Propagation import rssi,snr
-
+import math
 class myPacket:
     def __init__(self, nodeid, PacketPara, distance, bs):
         # new: base station ID
