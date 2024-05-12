@@ -39,5 +39,5 @@ if __name__ == "__main__":
     if allocation_method != "MARL":
         simulation.results_calculation()
         simulation.results_show()
-        simulation.simulation_record()
+        # simulation.simulation_record()
     

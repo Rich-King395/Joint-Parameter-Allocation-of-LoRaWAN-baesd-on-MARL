@@ -1,12 +1,11 @@
 import random
 import os
 from ParameterConfig import *
-from Propagation import checkcollision
+import ParameterConfig
 from Gateway import myBS
 from Node import myNode, transmit
 from datetime import datetime
 from train import train
-
 class Simulation:
     def __init__(self):
         self.sum = 0
@@ -17,7 +16,6 @@ class Simulation:
         self.simendtime = 0
         self.avgDER = 0
         self.derALL = 0
-        
         self.throughput = 0
         self.EffectEnergyConsumPerByte = 0
         self.file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -35,6 +33,7 @@ class Simulation:
             packetsAtBS.append([]) 
             packetsRecBS.append([])
 
+        random.seed(node_generation_seed)
         # generate node
         id = 0
         while len(nodes) < nrNodes*nrBS:
@@ -101,9 +100,9 @@ class Simulation:
             self.der.append(100*(len(packetsRecBS[i])/float(self.sent[i])))
             self.sumder = self.sumder + self.der[i]
         self.avgDER = (self.sumder)/nrBS
-
-        self.throughput = 8 * float(RecPacketSize) / TotalPacketAirtime
-        self.EffectEnergyConsumPerByte = float(TotalEnergyConsumption) / RecPacketSize
+        
+        self.throughput = 8 * float(ParameterConfig.RecPacketSize) / ParameterConfig.TotalPacketAirtime
+        self.EffectEnergyConsumPerByte = float(ParameterConfig.TotalEnergyConsumption) / ParameterConfig.RecPacketSize
     
     def results_show(self):
         # print stats and save into file
@@ -114,6 +113,7 @@ class Simulation:
 
         for i in range(0, nrBS):
             print ("send to BS[",i,"]:", self.sent[i]) # number of packets sent to each BS
+        global packetSeq
         print ("sent packets: ", packetSeq) # total sent packets of nodes
         for i in range(0,nrBS):
             print ("packets at BS",i, ":", len(packetsRecBS[i])) # received packets of each BS
@@ -124,9 +124,9 @@ class Simulation:
         print ("avg DER: {:.2f}".format(self.avgDER))
         print ("DER with 1 network:{:.2f}".format(self.derALL))
 
-        print ("Total payload size: {} bytes".format(TotalPacketSize))
-        print ("Received payload size: {} bytes".format(RecPacketSize))
-        print ("Total transmission energy consumption: {:.3f} Joule".format(TotalEnergyConsumption))
+        print ("Total payload size: {} bytes".format(ParameterConfig.TotalPacketSize))
+        print ("Received payload size: {} bytes".format(ParameterConfig.RecPacketSize))
+        print ("Total transmission energy consumption: {:.3f} Joule".format(ParameterConfig.TotalEnergyConsumption))
         print ("Network throughput: {:.3f} bps".format(self.throughput))
         print ("Effective energy consumption per byte: {:.3e} Joule".format(self.EffectEnergyConsumPerByte))
 
@@ -176,9 +176,9 @@ class Simulation:
                 file.write("]: {:.2f}%\n".format(self.der[i]))    
             file.write("avg DER: {:.2f}%\n".format(self.avgDER))
             file.write("DER with 1 network: {:.2f}%\n".format(self.derALL))
-            file.write("Total payload size: {} bytes\n".format(TotalPacketSize))
-            file.write("Received payload size: {} bytes\n".format(self.RecPacketSize))
-            file.write("Total transmission energy consumption: {:.3f} Joule\n".format(self.TotalEnergyConsumption))
+            file.write("Total payload size: {} bytes\n".format(ParameterConfig.TotalPacketSize))
+            file.write("Received payload size: {} bytes\n".format(ParameterConfig.RecPacketSize))
+            file.write("Total transmission energy consumption: {:.3f} Joule\n".format(ParameterConfig.TotalEnergyConsumption))
             file.write("Network throughput: {:.3f} bps\n".format(self.throughput))
             file.write("Effective energy consumption per byte: {:.3e} Joule\n".format(self.EffectEnergyConsumPerByte))
 

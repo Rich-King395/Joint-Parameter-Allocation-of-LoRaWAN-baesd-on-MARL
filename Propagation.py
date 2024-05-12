@@ -43,13 +43,17 @@ def checkcollision(packet):
 #        |f1-f2| <= 60 kHz if f1 or f2 has bw 250 
 #        |f1-f2| <= 30 kHz if f1 or f2 has bw 125 
 def frequencyCollision(p1,p2):
-    if (abs(p1.fre-p2.fre)<=120 and (p1.bw==500 or p2.fre==500)):#Bandwodth=500kHz
+    ''' consider Bandwidth
+    if (abs(p1.fre-p2.fre)<=120 and (p1.bw==500 or p2.bw==500)):#Bandwodth=500kHz
         return True
-    elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.fre==250)):#Bandwidth=250kHz
+    elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.bw==250)):#Bandwidth=250kHz
         return True
     else:
         if (abs(p1.fre-p2.fre)<=30):
             return True
+    '''
+    if p1.fre == p2.fre:
+        return True
     return False
 
 # SF Collision

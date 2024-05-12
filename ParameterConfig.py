@@ -6,7 +6,9 @@ import simpy
 import matplotlib.pyplot as plt
 import torch
 # turn on/off graphics
-graphics = 1
+graphics = 0
+
+node_generation_seed = 42
 
 # do the full collision check
 full_collision = False
@@ -37,20 +39,20 @@ SF = np.array([7,8,9,10,11,12])
 Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 50
+nrNodes = 20
 nrBS = 1
 radius = 2000
-PayloadSize = 65
+PayloadSize = 20
 avgSendTime = 2000
 allocation_type = "Local"
 allocation_method = "MARL"
 nrNetworks = 1
-simtime = 3600000
+simtime = 1200000
 directionality = 1
 full_collision = 1
 
 # global stuff
-update_interval = 100000 # configuration update time of MAA2C
+action_choose_interval = 30000 # configuration update time of MAA2C
 interval_flag = 0
 total_simtime = 0
 
@@ -85,6 +87,9 @@ lostPackets_interval = 0
 global_observation = []
 next_global_observation = []
 
+average_cumulative_reward = []
+PDR = []
+
 # global value of packet sequence numbers
 packetSeq = 0
 
@@ -107,21 +112,22 @@ class LoRaParameters:
     cr = 1
     bw = 125
     tp = 14
-    fre = 868000000
+    fre = 470400
     PayloadSize = PayloadSize
 
 class MAA2C_Config:
     num_agents = nrNodes
-    dim_local_observation = 12 
+    dim_local_observation = 15 
     dim_global_observation = dim_local_observation * nrNodes
     dim_action_sf = SF.size
     dim_action_bw = Bandwidth.size
     dim_action_fre = Carrier_Frequency.size
     discount = 0.99 # discount coefficient
-    num_episode = 1500
+    num_episode = 5000
     receive_reward = 10
-    lost_reward = -5
-    fairness_weight = 0.5
+    lost_reward = -20
+    fairness_weight = 1
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    random_seed = 3
 
     

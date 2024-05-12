@@ -69,13 +69,9 @@ class myNode:
                  PacketPara.sf,PacketPara.bw,PacketPara.fre = closest_allocation(self.dist[i])
             elif allocation_method == "polling":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre = polling_allocation(self.id)
-            elif allocation_method == "MARL":                 
-                 PacketPara.bw = Bandwidth[self.agent.action[0]]      
-                 PacketPara.sf = SF[self.agent.action[1]]  
-                 PacketPara.fre = Carrier_Frequency[self.agent.action[2]]      
+            elif allocation_method == "MARL":                     
+                 PacketPara.sf = SF[self.agent.action[0]]
             self.sf = PacketPara.sf
-            self.bw = PacketPara.bw
-            self.fre = PacketPara.fre 
             packet = myPacket(self.id, PacketPara, self.dist[i], i)
             self.packet.append(packet)
             self.packets_interval.append(packet)
@@ -148,8 +144,8 @@ def get_nearest_gw(x,y):
 # is maintained
 #      
 def transmit(env,node):
-    global packetSeq, sentPackets_interval, recPackets_interval, lostPackets_interval
-    global RecPacketSize, TotalPacketSize, TotalPacketAirtime, TotalEnergyConsumption 
+    global sentPackets_interval, recPackets_interval, lostPackets_interval
+    global recPackets
     while True:
         # time before sending anything (include prop delay)
         # simulate the time interval of discrete events happened in a system
@@ -157,16 +153,20 @@ def transmit(env,node):
         
         node.sent = node.sent + nrBS # number of packets sent by the node 
         node.sent_interval += nrBS # number of packets sent by the node during the update interval      
-        sentPackets_interval += nrBS
+        ParameterConfig.sentPackets_interval += nrBS
         
+        global packetSeq
         packetSeq += nrBS # total number of packet of the network
+        # print("packetSeq:",packetSeq)
 
+        # generate packets
         if allocation_type == "Local":
             node.Generate_Packet()
 
         for bs in range(0, nrBS):
             if (node in packetsAtBS[bs]):
-                    print ("ERROR: packet already in")
+                 pass
+                # print ("ERROR: packet already in")
             else:
                     # adding packet if no collision
                     if (checkcollision(node.packet[bs])==1):    
@@ -176,9 +176,10 @@ def transmit(env,node):
                     packetsAtBS[bs].append(node)
                     node.packet[bs].addTime = env.now
                     node.packet[bs].seqNr = packetSeq
-            TotalPacketSize += node.packet[bs].PS
-            TotalEnergyConsumption += float(node.packet[bs].tx_energy / 1000)
-            TotalPacketAirtime += float(node.packet[bs].rectime / 1000)            
+                    # print("node.packet[bs].seqNr:",node.packet[bs].seqNr)
+            ParameterConfig.TotalPacketSize += node.packet[bs].PS
+            ParameterConfig.TotalEnergyConsumption += float(node.packet[bs].tx_energy / 1000)
+            ParameterConfig.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)            
             
         # take first packet time on air   
         yield env.timeout(node.packet[0].rectime)
@@ -194,6 +195,7 @@ def transmit(env,node):
                 if node.packet[bs].collided == 0:
                     if (nrNetworks == 1):
                         packetsRecBS[bs].append(node.packet[bs].seqNr)
+                        # print("num of packets received by bs",bs,"is",len(packetsRecBS[bs]))
                         node.rec_interval += 1
                         ParameterConfig.recPackets_interval += 1
                     else:
@@ -207,7 +209,8 @@ def transmit(env,node):
                     if (ParameterConfig.recPackets):
                         if (ParameterConfig.recPackets[-1] != node.packet[bs].seqNr):
                             ParameterConfig.recPackets.append(node.packet[bs].seqNr)
-                            RecPacketSize += node.packet[bs].PS
+                            # print("num of total received packets",len(ParameterConfig.recPackets))      
+                            ParameterConfig.RecPacketSize += node.packet[bs].PS
                     else:
                         ParameterConfig.recPackets.append(node.packet[bs].seqNr)
                         ParameterConfig.RecPacketSize += node.packet[bs].PS

@@ -20,7 +20,6 @@ class ValueNet(nn.Module):
         x = self.fc3(x)
         return x
 
-
 '''
     Policy network
     3 full-connection network
@@ -28,48 +27,31 @@ class ValueNet(nn.Module):
     output the proability distribution of each action 
 '''
 class PolicyNet(nn.Module):
-    def __init__(self, dim_state, num_action_bw, num_action_sf, num_action_fre):
+    def __init__(self, dim_state, num_action_sf):
         super().__init__()
         # shared two full connection layers
-        self.shared_layers = nn.Sequential(
-            nn.Linear(dim_state, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU()
-        )
+        self.fc1=nn.Linear(dim_state, 128)
+        self.fc2=nn.Linear(128, 64)
+        self.fc3=nn.Linear(64, 32)
+        self.fc4=nn.Linear(32, num_action_sf)
         
-        # output layer of bw
-        self.output_bw = nn.Linear(32, num_action_bw)
-        
-        # output layer of sf
-        self.output_sf = nn.Linear(32, num_action_sf)
-        
-        # output layer of frequency
-        self.output_fre = nn.Linear(32, num_action_fre)
-
     def forward(self, observation):
-        x = self.shared_layers(observation)
-        out_bw = self.output_bw(x)
-        out_sf = self.output_sf(x)
-        out_fre = self.output_fre(x)
-        
-        bw_prob = F.softmax(out_bw, dim=-1)
+        x = F.relu(self.fc1(observation))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        out_sf=self.fc4(x)
+
         sf_prob = F.softmax(out_sf, dim=-1)
-        fre_prob = F.softmax(out_fre, dim=-1)
-        
-        return bw_prob, sf_prob, fre_prob
+        return sf_prob
     
     def policy(self, observation):
-        x = self.shared_layers(observation)
-        out_bw = self.output_bw(x)
-        out_sf = self.output_sf(x)
-        out_fre = self.output_fre(x)
+        x = F.relu(self.fc1(observation))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        out_sf=self.fc4(x)
         
-        bw_log_prob = F.log_softmax(out_bw, dim=-1)
         sf_log_prob = F.log_softmax(out_sf, dim=-1)
-        fre_log_prob = F.log_softmax(out_fre, dim=-1)
-        
-        return bw_log_prob, sf_log_prob, fre_log_prob
+        return sf_log_prob
 
 
 
