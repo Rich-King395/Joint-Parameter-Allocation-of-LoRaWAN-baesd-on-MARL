@@ -5,7 +5,8 @@ import ParameterConfig
 from Gateway import myBS
 from Node import myNode, transmit
 from datetime import datetime
-from train import train
+from MARL.train import MAA2C_train
+from MAB.train import MAB_train
 class Simulation:
     def __init__(self):
         self.sum = 0
@@ -53,7 +54,7 @@ class Simulation:
                 # when we add directionality, we update the RSSI here
                 if (directionality == 1):
                     node.updateRSSI()
-                if allocation_method != "MARL":
+                if allocation_method != "MARL" or allocation_method != "MAB":
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
             id += 1
@@ -75,9 +76,13 @@ class Simulation:
             plt.ylim([-radius, radius])
             plt.draw()
             plt.show()  
+            fig3_name = 'network_tropology.png'
+            plt.savefig(os.path.join(self.folder_path, fig3_name))
         
         if allocation_method=="MARL":
-            train(nodes)
+            MAA2C_train(nodes)
+        elif allocation_method=="MAB":
+            MAB_train(nodes)
         else:
         # start simulation until simtime
             env.run(until=simtime)          
@@ -135,7 +140,7 @@ class Simulation:
             input('Press Enter to continue ...')
     
     def simulation_record(self):
-        result_file_name = self.file_name+"-result.txt"
+        result_file_name = self.file_name+"-result.txt"   
         file_path = os.path.join(self.folder_path, result_file_name)
         with open(file_path, 'w') as file:
             file.write('Simulation start at {}'.format(self.simstarttime))

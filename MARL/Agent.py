@@ -9,8 +9,8 @@ class A2C:
         self.V_target = ValueNet(MAA2C_Config.dim_global_observation) # target value network
         self.pi = PolicyNet(MAA2C_Config.dim_local_observation, MAA2C_Config.dim_action_sf) # policy network
         self.V_target.load_state_dict(self.V.state_dict()) # load the parameters of value network to target network
-        self.value_optimizer = torch.optim.Adam(self.V.parameters(), lr=3e-3)
-        self.pi_optimizer = torch.optim.Adam(self.pi.parameters(), lr=3e-3)
+        self.value_optimizer = torch.optim.Adam(self.V.parameters(), lr=3e-4)
+        self.pi_optimizer = torch.optim.Adam(self.pi.parameters(), lr=3e-4)
 
         # load the networks to GPU
         self.V = self.V.to(MAA2C_Config.device)

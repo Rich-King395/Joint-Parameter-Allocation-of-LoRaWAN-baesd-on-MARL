@@ -30,6 +30,12 @@ def polling_allocation(id):
     fre = Carrier_Frequency[fre_index]
     bw = random.choice([125,250,500])
     return sf,bw,fre
+    # nodeid = id
+    # nodeid = nodeid % 6
+    # sf = SF[nodeid]
+    # bw = 125
+    # fre = 470400
+    # return sf,bw,fre
 
 
 

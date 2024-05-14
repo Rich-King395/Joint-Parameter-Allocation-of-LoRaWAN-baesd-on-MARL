@@ -6,7 +6,7 @@ import simpy
 import matplotlib.pyplot as plt
 import torch
 # turn on/off graphics
-graphics = 0
+graphics = 1
 
 node_generation_seed = 42
 
@@ -21,12 +21,12 @@ dir_180 = -3
 
 # this is an array with measured values for sensitivity
 # [SF,125KHz,250kHz,500kHz]
-sf7 = np.array([7,-126.5,-124.25,-120.75])
-sf8 = np.array([8,-127.25,-126.75,-124.0])
-sf9 = np.array([9,-131.25,-128.25,-127.5])
-sf10 = np.array([10,-132.75,-130.25,-128.75])
-sf11 = np.array([11,-134.5,-132.75,-128.75])
-sf12 = np.array([12,-133.25,-132.25,-132.25])
+sf7 = np.array([7,-123,-120,-116])
+sf8 = np.array([8,-126,-123,-119])
+sf9 = np.array([9,-129,-125,-122])
+sf10 = np.array([10,-132,-128,-125])
+sf11 = np.array([11,-133,-130,-133])
+sf12 = np.array([12,-136,-133,-130])
 
 # receiver sensitivities of different SF and Bandwidth combinations
 sensi = np.array([sf7,sf8,sf9,sf10,sf11,sf12])
@@ -39,13 +39,13 @@ SF = np.array([7,8,9,10,11,12])
 Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 20
+nrNodes = 50
 nrBS = 1
-radius = 2000
+radius = 2500
 PayloadSize = 20
-avgSendTime = 2000
+avgSendTime = 4000
 allocation_type = "Local"
-allocation_method = "MARL"
+allocation_method = "polling"
 nrNetworks = 1
 simtime = 1200000
 directionality = 1
@@ -126,8 +126,12 @@ class MAA2C_Config:
     num_episode = 5000
     receive_reward = 10
     lost_reward = -20
-    fairness_weight = 1
+    fairness_weight = 0
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     random_seed = 3
 
-    
+class MAB_Config:
+    coef = 1
+    epsilon = 0.25
+    random_seed = 2
+    num_episode = 4000    

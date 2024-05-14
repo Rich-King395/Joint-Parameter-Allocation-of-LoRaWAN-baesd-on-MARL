@@ -43,7 +43,6 @@ def checkcollision(packet):
 #        |f1-f2| <= 60 kHz if f1 or f2 has bw 250 
 #        |f1-f2| <= 30 kHz if f1 or f2 has bw 125 
 def frequencyCollision(p1,p2):
-    ''' consider Bandwidth
     if (abs(p1.fre-p2.fre)<=120 and (p1.bw==500 or p2.bw==500)):#Bandwodth=500kHz
         return True
     elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.bw==250)):#Bandwidth=250kHz
@@ -51,9 +50,9 @@ def frequencyCollision(p1,p2):
     else:
         if (abs(p1.fre-p2.fre)<=30):
             return True
-    '''
-    if p1.fre == p2.fre:
-        return True
+    
+    # if p1.fre == p2.fre:
+    #     return True
     return False
 
 # SF Collision
@@ -96,13 +95,14 @@ def timingCollision(p1, p2):
     return False
 
 def rssi(distance):
-    Lpl = 10*gamma*math.log10(distance/d0) + np.random.normal(Lpld0,std)
+    Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
     # print (Lpl)
     Prx = Ptx + GL - Lpl
     return Prx
 
-def snr(rss):
+def snr(rss,BW):
     # TODO make a better noise assumption
-    noise_floor = -174 + 10 * np.log10(125e3)
+    noise_floor = -174 + 10 * np.log10(BW*1000)
+    # noise_floor = -174 + 10 * np.log10(125*1000)
     return rss - noise_floor
 

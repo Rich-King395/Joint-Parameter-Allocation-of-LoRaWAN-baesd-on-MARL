@@ -28,7 +28,7 @@ class myPacket:
         self.miniSNR = myPacket.GetMiniSNR(self.sf)
 
         self.RSSI = rssi(distance)
-        self.SNR = snr(self.RSSI)
+        self.SNR = snr(self.RSSI,self.bw)
 
         self.rectime = myPacket.airtime(self.sf,self.cr,self.PS,self.bw)
         self.tx_energy = myPacket.calculate_energy(self.tp,self.rectime)

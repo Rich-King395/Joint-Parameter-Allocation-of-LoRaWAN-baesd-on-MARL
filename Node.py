@@ -9,6 +9,7 @@ from Packet import myPacket
 from Allocation import *
 from MARL.Model import *
 from MARL.Agent import A2C
+from MAB.Agent import *
 class myNode:
     def __init__(self, id, x, y, period, myBS):
         self.bs = myBS # the BS, which the node needs to send packets to
@@ -18,12 +19,17 @@ class myNode:
         self.x = x
         self.y = y
 
-        self.agent = A2C() # A2C agent
+        if allocation_method == "MARL":
+            self.agent = A2C() # A2C agent
+        elif allocation_method == "MAB":
+            self.agent = UCB(ParameterConfig.MAB_Config.coef) 
+            # self.agent = DecayingEpsilonGreedy() 
+            # self.agent = EpsilonGreedy(MAB_Config.epsilon)
 
         # LoRa parameters the node used to send packets      
-        self.sf = None
-        self.bw = None
-        self.fre = None
+        self.sf_index = 0
+        self.bw_index = 0
+        self.fre_index = 0
 
         self.packet = []
         self.dist = []
@@ -71,7 +77,11 @@ class myNode:
                  PacketPara.sf,PacketPara.bw,PacketPara.fre = polling_allocation(self.id)
             elif allocation_method == "MARL":                     
                  PacketPara.sf = SF[self.agent.action[0]]
-            self.sf = PacketPara.sf
+            elif allocation_method == "MAB":
+                 self.sf_index,self.bw_index,self.fre_index = self.agent.actions_choose()
+                 PacketPara.sf = SF[self.sf_index]
+                 PacketPara.bw = Bandwidth[self.bw_index]
+                 PacketPara.fre = Carrier_Frequency[self.fre_index]
             packet = myPacket(self.id, PacketPara, self.dist[i], i)
             self.packet.append(packet)
             self.packets_interval.append(packet)
@@ -219,6 +229,18 @@ def transmit(env,node):
                     node.lost_interval += 1
                     ParameterConfig.lostPackets_interval += 1
         
+        if allocation_method == "MAB":
+            for bs in range(0, nrBS):
+                if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
+                    node.agent.reward = -1 # packet loss, negative reward
+                else:
+                    node.agent.reward = 5 # successully received, positive reward
+            # print(node.id)
+            # print(node.agent.reward)
+            node.agent.cumulative_reward += node.agent.reward
+            node.agent.Expected_Reward_Update(node.sf_index, node.bw_index, node.fre_index)
+
+                 
         # print('rec_interval:', node.rec_interval)
         # print('recPackets_interval:', ParameterConfig.recPackets_interval)
         # print('lost_interval:', node.lost_interval)

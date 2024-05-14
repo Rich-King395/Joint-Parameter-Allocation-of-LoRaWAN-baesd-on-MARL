@@ -9,7 +9,7 @@ import ParameterConfig
 from Node import transmit
 from MARL.utils import Rollout,setup_seed
 import random
-def train(nodes):
+def MAA2C_train(nodes):
     # episode_reward_lst = []
     # log = defaultdict(list)
     file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -116,7 +116,10 @@ def train(nodes):
 
         # average cumulative reward of the node in this episode
         total_cumulative_reward = 0
+        num_sent = 0
         for node in nodes:
+            num_sent += node.sent
+            node.sent = 0
             total_cumulative_reward += node.agent.cumulative_reward
         ParameterConfig.average_cumulative_reward.append(total_cumulative_reward/len(nodes))
 
@@ -136,18 +139,18 @@ def train(nodes):
         # if episode % 10 == 0:
         num_rec = len(ParameterConfig.recPackets)
         num_lost = len(ParameterConfig.collidedPackets) + len(ParameterConfig.lostPackets)
-        print("num of sent packets in this episode:",)
-        print("number of received packets in this episode:",len(ParameterConfig.recPackets))
-        print("number of collided packets in this episode:",len(ParameterConfig.collidedPackets))
-        print("number of lost packets in this episode",len(ParameterConfig.lostPackets))
-        num_sent = num_rec + num_lost
+        # print("num of sent packets in this episode:",)
+        # print("number of received packets in this episode:",len(ParameterConfig.recPackets))
+        # print("number of collided packets in this episode:",len(ParameterConfig.collidedPackets))
+        # print("number of lost packets in this episode",len(ParameterConfig.lostPackets))
+        # num_sent = num_rec + num_lost
         pdr = float(num_rec/num_sent)*100
 
         ParameterConfig.PDR.append(pdr)
 
         with open(file_path, 'a') as file:
-            file.write(f"episode={episode}, mum of sent packets={num_sent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}, parameter update time={update_duration:.2f}\n")
-        print(f"episode={episode}, mum of sent packets={num_sent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}, parameter update time={update_duration:.2f}")
+            file.write(f"episode={episode}, mum of sent packets={num_sent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}\n")
+        print(f"episode={episode}, mum of sent packets={num_sent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}")
     
     # end of training
     
@@ -251,31 +254,31 @@ def Global_observation(nodes):
 
 def parameter_update(nodes):
     for node in nodes:
-            # extract the experiemnce in the rollout buffer
-            bgo, blogp_a, bngo, br = node.agent.rollout_buffer.tensor()
-            # initialize the rollout buffer for next episode
-            node.agent.rollout_buffer=Rollout()
-            # initialize the cumulative reward of each node for next episode
-            node.agent.cumulative_reward = 0
+        # extract the experiemnce in the rollout buffer
+        bgo, blogp_a, bngo, br = node.agent.rollout_buffer.tensor()
+        # initialize the rollout buffer for next episode
+        node.agent.rollout_buffer=Rollout()
+        # initialize the cumulative reward of each node for next episode
+        node.agent.cumulative_reward = 0
 
-            # print("shape of batch global observation:",bgo.shape)
-            # print("shape of batch logp_a:",blogp_a.shape)
-            # print("shape of batch reward:",br.shape)
-            # print("shape of batch next global observation:",bngo.shape)
+        # print("shape of batch global observation:",bgo.shape)
+        # print("shape of batch logp_a:",blogp_a.shape)
+        # print("shape of batch reward:",br.shape)
+        # print("shape of batch next global observation:",bngo.shape)
 
-            # update the value network
-            value_loss, advantage = node.agent.compute_value_loss(bgo, br, bngo)
-            node.agent.value_optimizer.zero_grad()
-            value_loss.backward(retain_graph=True)
-            node.agent.value_optimizer.step()
+        # update the value network
+        value_loss, advantage = node.agent.compute_value_loss(bgo, br, bngo)
+        node.agent.value_optimizer.zero_grad()
+        value_loss.backward(retain_graph=True)
+        node.agent.value_optimizer.step()
 
-            # update the target network 
-            node.agent.soft_update()
-            
-            # update the actor network
-            policy_loss = node.agent.compute_policy_loss(blogp_a, advantage)
-            policy_loss.requires_grad_(True)
-            node.agent.pi_optimizer.zero_grad()
-            policy_loss.backward()
-            node.agent.pi_optimizer.step()
+        # update the target network 
+        node.agent.soft_update()
+        
+        # update the actor network
+        policy_loss = node.agent.compute_policy_loss(blogp_a, advantage)
+        policy_loss.requires_grad_(True)
+        node.agent.pi_optimizer.zero_grad()
+        policy_loss.backward()
+        node.agent.pi_optimizer.step()
     
