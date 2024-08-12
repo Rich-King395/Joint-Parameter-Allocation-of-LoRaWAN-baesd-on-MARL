@@ -33,9 +33,9 @@ class myPacket:
         self.rectime = myPacket.airtime(self.sf,self.cr,self.PS,self.bw)
         self.tx_energy = myPacket.calculate_energy(self.tp,self.rectime)
 
-        if self.RSSI > self.minisensi and self.SNR > self.miniSNR:
+        # if self.RSSI > self.minisensi and self.SNR > self.miniSNR:
         # if self.RSSI > self.minisensi:
-             self.lost = False
+        #      self.lost = False
 
     # this function computes the airtime of a packet
     # according to LoraDesignGuide_STD.pdf

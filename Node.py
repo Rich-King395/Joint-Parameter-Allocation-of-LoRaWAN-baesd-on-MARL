@@ -18,6 +18,9 @@ class myNode:
         self.x = x
         self.y = y
 
+        self.last_packet_rssi = 0 # the RSSI of the last packet sent by the node
+        self.ADR_flag = 0 # the ADR flag of the node
+        self.Generate_Packet_Flag = 0
 
         if allocation_method == "MAB":
             if MAB_Config.MAB_Variant == 0:
@@ -81,11 +84,13 @@ class myNode:
         for i in range(0,nrBS):
             d = get_distance(self.x,self.y,bs[i]) # distance between node and gateway
             self.dist.append(d)
-            PacketPara = LoRaParameters()
+            if self.Generate_Packet_Flag == 0:
+                PacketPara = LoRaParameters()
+                self.Generate_Packet_Flag == 1
             if allocation_method == "random":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = random_allocation()
-            elif allocation_method == "closest":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre = closest_allocation(self.dist[i])
+            elif allocation_method == "ADR":
+                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
             elif allocation_method == "polling":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre = polling_allocation(self.id)
             elif allocation_method == "MARL":                     
@@ -103,7 +108,9 @@ class myNode:
                  PacketPara.bw = Bandwidth[self.bw_index]
                  PacketPara.fre = Carrier_Frequency[self.fre_index]
             packet = myPacket(self.id, PacketPara, i)
-            checklost(packet,self.dist[i])
+            self.last_packet_rssi = checklost(packet,self.dist[i])
+            # if self.id == 0:
+            #     print("last_packet_rssi", self.last_packet_rssi)
             self.packet.append(packet)
             self.packets_interval.append(packet)
         # print('node %d' %id, "x", self.x, "y", self.y, "dist: ", self.dist, "my BS:", self.bs.id)

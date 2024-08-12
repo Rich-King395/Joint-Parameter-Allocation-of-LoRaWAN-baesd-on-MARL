@@ -60,15 +60,15 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 100
+nrNodes = 50
 nrBS = 1
-radius = 1500
+radius = 1000
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
-allocation_method = "MAB"
+allocation_method = "Random"
 nrNetworks = 1
-simtime = 400000
+simtime =1200000
 directionality = 1
 full_collision = True
 

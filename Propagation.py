@@ -125,3 +125,4 @@ def checklost(packet,distance):
     # if packet.SNR < packet.miniSNR:
     if packet.RSSI < packet.minisensi or packet.SNR < packet.miniSNR:
         packet.lost = True
+    return packet.RSSI
