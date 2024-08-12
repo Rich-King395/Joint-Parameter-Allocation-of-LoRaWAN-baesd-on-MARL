@@ -5,20 +5,25 @@ import ParameterConfig
 from Gateway import myBS
 from Node import myNode, transmit
 from datetime import datetime
-from MARL.train import MAA2C_train
 from MAB.train import MAB_train
 class Simulation:
     def __init__(self):
         self.sum = 0
         self.sumSent = 0
-        self.sent = []
+        self.sent = [] 
         self.der = []
         self.simstarttime = 0
         self.simendtime = 0
         self.avgDER = 0
-        self.derALL = 0
+        self.PDRAll = 0
+
+        self.PDRMin = 0
+        self.PDRMax = 0
         self.throughput = 0
-        self.EffectEnergyConsumPerByte = 0
+        self.EnergyEfficiency = 0 # Network Energy efficiency (bits/mJoule)
+
+        self.MinEnergyEfficiency = 0 # Minimum energy efficiency among the nodes (bits/mJoule)
+        self.JainFairness = 0 # Jain's fairness index
         self.file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.folder_path = os.path.join(os.getcwd(), "results")
         self.folder_path = os.path.join(self.folder_path,self.file_name)
@@ -34,7 +39,7 @@ class Simulation:
             packetsAtBS.append([]) 
             packetsRecBS.append([])
 
-        random.seed(node_generation_seed)
+        set_seed(random_seed)
         # generate node
         id = 0
         while len(nodes) < nrNodes*nrBS:
@@ -54,52 +59,57 @@ class Simulation:
                 # when we add directionality, we update the RSSI here
                 if (directionality == 1):
                     node.updateRSSI()
-                if allocation_method != "MARL" or allocation_method != "MAB":
+                if allocation_method not in ["MARL", "MAB", "Q-table"]:
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
             id += 1
 
         # store nodes and basestation locations
-        node_path = os.path.join(self.folder_path, self.file_name+"-node.txt")
-        with open(node_path, 'w') as nfile:
-            for node in nodes:
-                nfile.write('{x} {y} {id}\n'.format(**vars(node)))
+        if storage_flag == 1:  
+            node_path = os.path.join(self.folder_path, self.file_name+"-node.txt")
+            with open(node_path, 'w') as nfile:
+                for node in nodes:
+                    nfile.write('{x} {y} {id}\n'.format(**vars(node)))
 
-        basestation = os.path.join(self.folder_path, self.file_name+"-basestation.txt")
-        with open(basestation, 'w') as bfile:
-            for basestation in bs:
-                bfile.write('{x} {y} {id}\n'.format(**vars(basestation)))
+            basestation = os.path.join(self.folder_path, self.file_name+"-basestation.txt")
+            with open(basestation, 'w') as bfile:
+                for basestation in bs:
+                    bfile.write('{x} {y} {id}\n'.format(**vars(basestation)))
 
         # prepare show
         if (graphics == 1):
             plt.xlim([-radius, radius])
             plt.ylim([-radius, radius])
             plt.draw()
-            plt.show()  
-            fig3_name = 'network_tropology.png'
-            plt.savefig(os.path.join(self.folder_path, fig3_name))
+            plt.show()
+            if storage_flag == 1:  
+                fig3_name = 'network_tropology.png'
+                plt.savefig(os.path.join(self.folder_path, fig3_name))
         
-        if allocation_method=="MARL":
-            MAA2C_train(nodes)
-        elif allocation_method=="MAB":
+        if allocation_method=="MAB":
             MAB_train(nodes)
         else:
-        # start simulation until simtime
+        # traditional algorithms do not need training stage, start simulation until simtime
             env.run(until=simtime)          
 
     def results_calculation(self):
         for i in range(0,nrBS):
             self.sum = self.sum + len(packetsRecBS[i]) # calculate total received packets
-        for i in range(0, nrBS):
+        for i in range(0,nrBS):
             self.sent.append(0)
         for i in range(0,nrNodes*nrBS):
             self.sumSent = self.sumSent + nodes[i].sent
             #print ("id for node ", nodes[i].id, "BS:", nodes[i].bs.id, " sent: ", nodes[i].sent)
             self.sent[nodes[i].bs.id] = self.sent[nodes[i].bs.id] + nodes[i].sent
-
+        for node in nodes:
+            node.PDR = 100*((node.rec_interval)/float(node.sent_interval))
+            PDRPerNode.append(node.PDR)
+            node.EnergyEfficiency = node.RecPacketSize / float(node.EnergyConsumption)
+            EnergyEfficiencyPerNode.append(node.EnergyEfficiency)
+            
         # der = []
         # data extraction rate = Packet Dilvery Rate PDR
-        self.derALL = 100*(len(recPackets)/float(self.sumSent))
+        self.PDRAll = 100*(len(recPackets)/float(self.sumSent))
         self.sumder = 0
         for i in range(0, nrBS):
             self.der.append(100*(len(packetsRecBS[i])/float(self.sent[i])))
@@ -107,33 +117,45 @@ class Simulation:
         self.avgDER = (self.sumder)/nrBS
         
         self.throughput = 8 * float(ParameterConfig.RecPacketSize) / ParameterConfig.TotalPacketAirtime
-        self.EffectEnergyConsumPerByte = float(ParameterConfig.TotalEnergyConsumption) / ParameterConfig.RecPacketSize
-    
+        self.EnergyEfficiency =  ParameterConfig.RecPacketSize / float(ParameterConfig.TotalEnergyConsumption)
+        # fairness measure metrics
+        self.MinEnergyEfficiency = min(EnergyEfficiencyPerNode)
+        self.PDRMin = min(PDRPerNode)
+        self.PDRMax = max(PDRPerNode)
+        self.JainFairness = Jain_Fairness_Index(nodes)
+
+
+
     def results_show(self):
         # print stats and save into file
+        print ("Total number of packets sent: ", self.sumSent)
         print ("Number of received packets (independent of right base station)", len(recPackets))
         print ("Number of collided packets", len(collidedPackets))
         print ("Number of lost packets (not correct)", len(lostPackets))
-        print ("Total number of packets sent: ", self.sumSent)
+        
+        # for i in range(0, nrBS):
+        #     print ("send to BS[",i,"]:", self.sent[i]) # number of packets sent to each BS
+        # global packetSeq
+        # print ("sent packets: ", packetSeq) # total sent packets of nodes
+        # for i in range(0,nrBS):
+        #     print ("packets at BS",i, ":", len(packetsRecBS[i])) # received packets of each BS
+        # print ("overall received at right BS: ", self.sum)
 
-        for i in range(0, nrBS):
-            print ("send to BS[",i,"]:", self.sent[i]) # number of packets sent to each BS
-        global packetSeq
-        print ("sent packets: ", packetSeq) # total sent packets of nodes
-        for i in range(0,nrBS):
-            print ("packets at BS",i, ":", len(packetsRecBS[i])) # received packets of each BS
-        print ("overall received at right BS: ", self.sum)
+        # for i in range(0, nrBS):
+        #     print ("DER BS[",i,"]: {:.2f}".format(self.der[i]))    
+        # print ("avg DER: {:.2f}".format(self.avgDER))
+        # print ("DER with 1 network:{:.2f}".format(self.PDRAll))
 
-        for i in range(0, nrBS):
-            print ("DER BS[",i,"]: {:.2f}".format(self.der[i]))    
-        print ("avg DER: {:.2f}".format(self.avgDER))
-        print ("DER with 1 network:{:.2f}".format(self.derALL))
-
+        print("Network PDR(Packet Delivery Rate): {:.2f} %".format(self.PDRAll))
+        print("Minimum PDR: {:.2f} %".format(self.PDRMin))
+        print("Maximum PDR: {:.2f} %".format(self.PDRMax))
         print ("Total payload size: {} bytes".format(ParameterConfig.TotalPacketSize))
         print ("Received payload size: {} bytes".format(ParameterConfig.RecPacketSize))
         print ("Total transmission energy consumption: {:.3f} Joule".format(ParameterConfig.TotalEnergyConsumption))
         print ("Network throughput: {:.3f} bps".format(self.throughput))
-        print ("Effective energy consumption per byte: {:.3e} Joule".format(self.EffectEnergyConsumPerByte))
+        print ("Network Energy efficiency: {:.3f} bits/mJ".format(self.EnergyEfficiency))
+        print ("Minimum Energy efficiency: {:.3f} bits/mJ".format(self.MinEnergyEfficiency))
+        print ("Jain's fairness index: {:.3e}".format(self.JainFairness))
 
         # this can be done to keep graphics visible
         if (graphics == 1):
@@ -180,13 +202,11 @@ class Simulation:
                 file.write("DER BS[".format(i))
                 file.write("]: {:.2f}%\n".format(self.der[i]))    
             file.write("avg DER: {:.2f}%\n".format(self.avgDER))
-            file.write("DER with 1 network: {:.2f}%\n".format(self.derALL))
+            file.write("DER with 1 network: {:.2f}%\n".format(self.PDRAll))
             file.write("Total payload size: {} bytes\n".format(ParameterConfig.TotalPacketSize))
             file.write("Received payload size: {} bytes\n".format(ParameterConfig.RecPacketSize))
             file.write("Total transmission energy consumption: {:.3f} Joule\n".format(ParameterConfig.TotalEnergyConsumption))
             file.write("Network throughput: {:.3f} bps\n".format(self.throughput))
-            file.write("Effective energy consumption per byte: {:.3e} Joule\n".format(self.EffectEnergyConsumPerByte))
+            file.write("Network Energy efficiency: {:.3f} bit/Joule\n".format(self.EnergyEfficiency))
+            file.write("Minimum Energy efficiency: {:.3f} bits/mJ".format(self.MinEnergyEfficiency))
 
-
-
-    

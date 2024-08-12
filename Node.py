@@ -7,9 +7,8 @@ from ParameterConfig import *
 import ParameterConfig
 from Packet import myPacket
 from Allocation import *
-from MARL.Model import *
-from MARL.Agent import A2C
 from MAB.Agent import *
+
 class myNode:
     def __init__(self, id, x, y, period, myBS):
         self.bs = myBS # the BS, which the node needs to send packets to
@@ -19,10 +18,15 @@ class myNode:
         self.x = x
         self.y = y
 
-        if allocation_method == "MARL":
-            self.agent = A2C() # A2C agent
-        elif allocation_method == "MAB":
-            self.agent = UCB(ParameterConfig.MAB_Config.coef) 
+
+        if allocation_method == "MAB":
+            if MAB_Config.MAB_Variant == 0:
+                self.agent = EpsilonGreedy()
+            elif MAB_Config.MAB_Variant == 1:
+                self.agent = DecayingEpsilonGreedy()
+            elif MAB_Config.MAB_Variant == 2:
+                self.agent = UCB(MAB_Config.coef)
+
             # self.agent = DecayingEpsilonGreedy() 
             # self.agent = EpsilonGreedy(MAB_Config.epsilon)
 
@@ -30,6 +34,8 @@ class myNode:
         self.sf_index = 0
         self.bw_index = 0
         self.fre_index = 0
+        self.tp_index = 0
+        self.sf_bw_index = 0
 
         self.packet = []
         self.dist = []
@@ -37,12 +43,19 @@ class myNode:
         # list of packets sent during update interval
         self.packets_interval = []
 
+        # number of packets sent by the node
         self.sent = 0
+        self.powerlost = 0
+        self.collided = 0
 
         self.sent_interval = 0 # number of packets sent by the node during update interval
         self.rec_interval = 0 # number of sussccessfully-seceived packets sent by the node during update interval
         self.lost_interval = 0 # number of lost packets sent by the node during update interval
 
+        self.PDR = 0 # packet delivery ratio of the node
+        self.RecPacketSize = 0 # size of packets received by the node
+        self.EnergyConsumption = 0 # energy consumption of the node
+        self.EnergyEfficiency = 0 # energy efficiency of the node
 
         if allocation_type == "Global":
             myNode.Generate_Packet(self)
@@ -70,7 +83,7 @@ class myNode:
             self.dist.append(d)
             PacketPara = LoRaParameters()
             if allocation_method == "random":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre = random_allocation()
+                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = random_allocation()
             elif allocation_method == "closest":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre = closest_allocation(self.dist[i])
             elif allocation_method == "polling":
@@ -78,11 +91,19 @@ class myNode:
             elif allocation_method == "MARL":                     
                  PacketPara.sf = SF[self.agent.action[0]]
             elif allocation_method == "MAB":
+                 self.sf_index,self.bw_index,self.fre_index,self.tp_index = self.agent.actions_choose()
+                 PacketPara.sf = SF[self.sf_index]
+                 PacketPara.bw = Bandwidth[self.bw_index]
+                 PacketPara.fre = Carrier_Frequency[self.fre_index]
+                 PacketPara.tp = Transmission_Power[self.tp_index]
+                 #PacketPara.tp = 14
+            elif allocation_method == "Q-table":
                  self.sf_index,self.bw_index,self.fre_index = self.agent.actions_choose()
                  PacketPara.sf = SF[self.sf_index]
                  PacketPara.bw = Bandwidth[self.bw_index]
                  PacketPara.fre = Carrier_Frequency[self.fre_index]
-            packet = myPacket(self.id, PacketPara, self.dist[i], i)
+            packet = myPacket(self.id, PacketPara, i)
+            checklost(packet,self.dist[i])
             self.packet.append(packet)
             self.packets_interval.append(packet)
         # print('node %d' %id, "x", self.x, "y", self.y, "dist: ", self.dist, "my BS:", self.bs.id)
@@ -159,12 +180,12 @@ def transmit(env,node):
     while True:
         # time before sending anything (include prop delay)
         # simulate the time interval of discrete events happened in a system
+        # set_seed(random_seed)
         yield env.timeout(random.expovariate(1.0/float(node.period)))
         
         node.sent = node.sent + nrBS # number of packets sent by the node 
         node.sent_interval += nrBS # number of packets sent by the node during the update interval      
-        ParameterConfig.sentPackets_interval += nrBS
-        
+        ParameterConfig.sentPackets_interval += nrBS # number of packets sent by all nodes during the update interval
         global packetSeq
         packetSeq += nrBS # total number of packet of the network
         # print("packetSeq:",packetSeq)
@@ -178,17 +199,19 @@ def transmit(env,node):
                  pass
                 # print ("ERROR: packet already in")
             else:
-                    # adding packet if no collision
-                    if (checkcollision(node.packet[bs])==1):    
-                        node.packet[bs].collided = 1
-                    else:
-                        node.packet[bs].collided = 0
-                    packetsAtBS[bs].append(node)
-                    node.packet[bs].addTime = env.now
-                    node.packet[bs].seqNr = packetSeq
-                    # print("node.packet[bs].seqNr:",node.packet[bs].seqNr)
+                # adding packet if no collision
+                if (checkcollision(node.packet[bs])==1):    
+                    node.packet[bs].collided = 1
+                else:
+                    node.packet[bs].collided = 0
+                packetsAtBS[bs].append(node)
+                node.packet[bs].addTime = env.now
+                node.packet[bs].seqNr = packetSeq
+                # print("node.packet[bs].seqNr:",node.packet[bs].seqNr)
+            node.EnergyConsumption += node.packet[bs].tx_energy
+            
             ParameterConfig.TotalPacketSize += node.packet[bs].PS
-            ParameterConfig.TotalEnergyConsumption += float(node.packet[bs].tx_energy / 1000)
+            ParameterConfig.TotalEnergyConsumption += node.packet[bs].tx_energy
             ParameterConfig.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)            
             
         # take first packet time on air   
@@ -221,15 +244,61 @@ def transmit(env,node):
                             ParameterConfig.recPackets.append(node.packet[bs].seqNr)
                             # print("num of total received packets",len(ParameterConfig.recPackets))      
                             ParameterConfig.RecPacketSize += node.packet[bs].PS
+                            node.RecPacketSize += node.packet[bs].PS
                     else:
                         ParameterConfig.recPackets.append(node.packet[bs].seqNr)
                         ParameterConfig.RecPacketSize += node.packet[bs].PS
+                        node.RecPacketSize += node.packet[bs].PS
                 else:
                     ParameterConfig.collidedPackets.append(node.packet[bs].seqNr)
                     node.lost_interval += 1
                     ParameterConfig.lostPackets_interval += 1
+            # print("num of total received packets",len(ParameterConfig.recPackets))
         
+
         if allocation_method == "MAB":
+            for bs in range(0, nrBS):
+                if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
+                    node.agent.reward = -1 # packet loss, negative reward
+                else:
+                    node.agent.reward = 1 # successully received, positive reward
+            # print(node.id)
+            # print(node.agent.reward)
+            node.agent.cumulative_reward += node.agent.reward
+            node.agent.Expected_Reward_Update(node.sf_index, node.bw_index, node.fre_index, node.tp_index)
+
+            # if node.id == 0:
+            #     print("Transmission Power",ParameterConfig.Transmission_Power[node.tp_index])
+
+        # if allocation_method == "MAB":
+        #     for bs in range(0, nrBS):
+        #         if node.packet[bs].lost == "True":
+        #             #node.agent.rewards = [-1,-1,-1]
+        #             node.agent.rewards = [0,0,-1] # packet lost, negative reward
+        #         elif node.packet[bs].collided == 1: 
+        #             #node.agent.rewards = [-1,-1,-1]
+        #             node.agent.rewards = [-1,-1,0] # packet collided, negative reward
+        #         else:
+        #             #tp_reward = 5-(5*(float(Transmission_Power[node.tp_index]-8)/10))
+        #             tp_reward = 5
+        #             #node.agent.rewards = [1,1,1] 
+        #             node.agent.rewards = [5,5,tp_reward] # successully received, positive reward
+        #     # print("node id:",node.id)
+        #     # print(node.agent.reward)
+        #     node.agent.cumulative_reward_SF_BW += node.agent.rewards[0]
+        #     node.agent.cumulative_reward_Fre += node.agent.rewards[1]
+        #     node.agent.cumulative_reward_TP += node.agent.rewards[2]
+
+        #     node.agent.Expected_Reward_Update(node.sf_bw_index, node.fre_index, node.tp_index)
+
+            # if node.id == 0:
+            #     print("Q_SF_BW",node.agent.Q_SF_BW)
+            #     print("Q_Fre",node.agent.Q_Fre)
+            #     print("Q_TP",node.agent.Q_TP)
+
+        
+        if allocation_method == "Q-table":
+            actions = [node.sf_index,node.bw_index,node.fre_index]
             for bs in range(0, nrBS):
                 if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
                     node.agent.reward = -1 # packet loss, negative reward
@@ -238,9 +307,12 @@ def transmit(env,node):
             # print(node.id)
             # print(node.agent.reward)
             node.agent.cumulative_reward += node.agent.reward
-            node.agent.Expected_Reward_Update(node.sf_index, node.bw_index, node.fre_index)
-
-                 
+            if ParameterConfig.Q_table_Config.experience_replay == True:
+                node.agent.buffer.push(actions,node.agent.reward)
+                node.agent.update_with_experience_replay()
+            else:
+                 node.agent.update_without_experience_replay(actions)
+                
         # print('rec_interval:', node.rec_interval)
         # print('recPackets_interval:', ParameterConfig.recPackets_interval)
         # print('lost_interval:', node.lost_interval)

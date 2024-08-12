@@ -8,7 +8,7 @@ from ParameterConfig import *
 def checkcollision(packet):
     col = 0 # flag needed since there might be several collisions for packet
     # lost packets don't collide
-    if packet.lost: 
+    if packet.lost:
        return 0
     if packetsAtBS[packet.bs]:
         for other in packetsAtBS[packet.bs]:
@@ -94,15 +94,34 @@ def timingCollision(p1, p2):
         return True
     return False
 
-def rssi(distance):
+def rssi(Ptx,distance):
     Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
     # print (Lpl)
     Prx = Ptx + GL - Lpl
     return Prx
 
-def snr(rss,BW):
-    # TODO make a better noise assumption
-    noise_floor = -174 + 10 * np.log10(BW*1000)
-    # noise_floor = -174 + 10 * np.log10(125*1000)
-    return rss - noise_floor
+def snr(packet):
+    # noise_floor = -174 + 10 * math.log10(125e3)
+    # return packet.RSSI - noise_floor
+    AGWN_std = 1
+    inter_channel_interference = 0
+    AGWN = np.random.normal(0,AGWN_std) # Additive Gaussian White Noise
+    if packetsAtBS[packet.bs]:
+        for other in packetsAtBS[packet.bs]:
+            if other.id != packet.nodeid:
+                if timingCollision(packet, other.packet[packet.bs]):
+                    inter_channel_interference +=  other.packet[packet.bs].RSSI
+    SNR_linear = packet.RSSI/(inter_channel_interference + AGWN) 
+    if SNR_linear < 0:
+        SNR_linear = 1
+    SNR_dB = 10 * math.log10(SNR_linear)
+    # print("SNR: ",SNR_dB)
+    return SNR_dB
 
+def checklost(packet,distance):
+    packet.RSSI = rssi(packet.tp,distance)
+    packet.SNR = snr(packet)
+    # if packet.RSSI < packet.minisensi:
+    # if packet.SNR < packet.miniSNR:
+    if packet.RSSI < packet.minisensi or packet.SNR < packet.miniSNR:
+        packet.lost = True

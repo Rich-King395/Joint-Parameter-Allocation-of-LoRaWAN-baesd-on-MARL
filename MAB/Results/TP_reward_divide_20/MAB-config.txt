@@ -1,0 +1,17 @@
+--------Network Parameter Setting--------
+Nodes per base station: 50
+Packet generation interval: 4000 ms
+LoRa parameters allocation type: Local
+LoRa parameters allocation method: MAB
+Simulation duration: 0.11 h
+Number of gateways: 1
+Collision check mode: Full Collision Check
+Antenna type: Directional antenna
+Number of networks: 1
+Network topology radius: 1500 m
+Packet payload size: 20
+
+--------MAB Configuration--------
+MAB type: Epsilon Greedy
+Epsilon: 0.05
+Number of training episodes: 5000

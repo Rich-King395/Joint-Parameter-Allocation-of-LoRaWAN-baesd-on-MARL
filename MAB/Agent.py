@@ -1,4 +1,5 @@
 import ParameterConfig
+from ParameterConfig import *
 import numpy as np
 class MAB:
     def __init__(self):
@@ -6,16 +7,20 @@ class MAB:
         self.K_SF = len(ParameterConfig.SF)
         self.K_BW = len(ParameterConfig.Bandwidth)
         self.K_Fre = len(ParameterConfig.Carrier_Frequency)
+        self.K_TP = len(ParameterConfig.Transmission_Power)
+
         # intialize the expected reward of the handles of each bandit as 0
         self.Q_SF = np.zeros(self.K_SF, dtype=float)
         self.Q_BW = np.zeros(self.K_BW, dtype=float)
         self.Q_Fre = np.zeros(self.K_Fre, dtype=float)
+        self.Q_TP = np.zeros(self.K_TP, dtype=float)
         
         # print(self.Q_SF,self.Q_BW,self.Q_Fre)
         # Number of the choices of each handdle of each bandit
         self.counts_SF = np.zeros(self.K_SF)
         self.counts_BW = np.zeros(self.K_BW)
         self.counts_Fre = np.zeros(self.K_Fre)
+        self.counts_TP = np.zeros(self.K_TP)
 
         # reward for each step
         self.reward = 0
@@ -30,7 +35,7 @@ class MAB:
         # the agent pull three handles for each step
         raise NotImplementedError
     
-    def Expected_Reward_Update(self,k_sf,k_bw,k_fre):
+    def Expected_Reward_Update(self,k_sf,k_bw,k_fre,k_tp):
         # print("Update expected reward")
         # print("self.reward=",self.reward)
         # print("SF index",k_sf)
@@ -41,13 +46,18 @@ class MAB:
         # print("self.Q_SF[k_sf]",self.Q_SF[k_sf])
         self.Q_BW[k_bw] +=  (self.reward - self.Q_SF[k_bw]) / (self.counts_BW[k_bw] + 1)
         self.Q_Fre[k_fre] += (self.reward - self.Q_Fre[k_fre]) / (self.counts_Fre[k_fre] + 1)
+        if self.reward == 1:
+            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/30)
+        elif self.reward == -1:
+            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/30)
+        self.Q_TP[k_tp] += (self.reward - self.Q_TP[k_tp]) / (self.counts_TP[k_tp] + 1)
 
 
 """ epsilon greedy algorithm, inherit from MAB """
 class EpsilonGreedy(MAB):
-    def __init__(self, epsilon):
+    def __init__(self):
         super(EpsilonGreedy, self).__init__()
-        self.epsilon = epsilon
+        self.epsilon = MAB_Config.epsilon
 
     def actions_choose(self):
         '''SF choose'''
@@ -68,22 +78,27 @@ class EpsilonGreedy(MAB):
         else:
             k_fre = np.argmax(self.Q_Fre)  # choose the handle with the highest reward
         self.counts_Fre[k_fre] += 1
+        '''Transmission power choose'''
+        if np.random.random() < self.epsilon:
+            k_tp = np.random.randint(0, self.K_TP)  # randomly choose a handle
+        else:
+            k_tp = np.argmax(self.Q_TP)  # choose the handle with the highest reward
+        self.counts_TP[k_tp] += 1
 
-        self.action = [ParameterConfig.SF[k_sf],ParameterConfig.Bandwidth[k_bw],ParameterConfig.Carrier_Frequency[k_fre]]
+        self.action = [ParameterConfig.SF[k_sf],ParameterConfig.Bandwidth[k_bw],ParameterConfig.Carrier_Frequency[k_fre],ParameterConfig.Transmission_Power[k_tp]]
         '''store the actions for each step'''
         self.actions.append(self.action)
 
-        return k_sf,k_bw,k_fre
+        return k_sf,k_bw,k_fre,k_tp
 
 """ time-decreasing epsilon-greedy algorithm, inherit from MAB"""
 class DecayingEpsilonGreedy(MAB):
     def __init__(self):
         super(DecayingEpsilonGreedy, self).__init__()
-        self.total_count = 0
+        self.epsilon = MAB_Config.decay_epsilon
+
 
     def actions_choose(self):
-        self.total_count += 1
-        self.epsilon = 1 / self.total_count
         '''SF choose'''
         if np.random.random() < self.epsilon:
             k_sf = np.random.randint(0, self.K_SF)  # randomly choose a handle
@@ -102,11 +117,18 @@ class DecayingEpsilonGreedy(MAB):
         else:
             k_fre = np.argmax(self.Q_Fre)  # choose the handle with the highest reward
         self.counts_Fre[k_fre] += 1
+        '''Transmission power choose'''
+        if np.random.random() < self.epsilon:
+            k_tp = np.random.randint(0, self.K_TP)  # randomly choose a handle
+        else:
+            k_tp = np.argmax(self.Q_TP)  # choose the handle with the highest reward
+        self.counts_TP[k_tp] += 1
 
-        self.action = [ParameterConfig.SF[k_sf],ParameterConfig.Bandwidth[k_bw],ParameterConfig.Carrier_Frequency[k_fre]]
+        self.action = [ParameterConfig.SF[k_sf],ParameterConfig.Bandwidth[k_bw],ParameterConfig.Carrier_Frequency[k_fre],ParameterConfig.Transmission_Power[k_tp]]
         '''store the actions for each step'''
         self.actions.append(self.action)
-        return k_sf,k_bw,k_fre
+
+        return k_sf,k_bw,k_fre,k_tp
 
 
 """ UCB(Upper Confidence Boundary) algorithm, inherit from MAB"""
@@ -135,9 +157,14 @@ class UCB(MAB):
             np.log(self.total_count) / (2 * (self.counts_Fre + 1)))  # calculate ucb of fre
         k_fre = np.argmax(ucb_fre)
         self.counts_Fre[k_fre] += 1
-
-        self.action = [ParameterConfig.SF[k_sf],ParameterConfig.Bandwidth[k_bw],ParameterConfig.Carrier_Frequency[k_fre]]
+        '''Transmission power choose'''
+        ucb_tp = self.Q_TP + self.coef * np.sqrt(
+            np.log(self.total_count) / (2 * (self.counts_TP + 1)))  # calculate ucb of fre
+        k_tp = np.argmax(ucb_tp)
+        self.counts_TP[k_tp] += 1
+       
+        self.action = [ParameterConfig.SF[k_sf],ParameterConfig.Bandwidth[k_bw],ParameterConfig.Carrier_Frequency[k_fre],ParameterConfig.Transmission_Power[k_tp]]
         '''store the actions for each step'''
         self.actions.append(self.action)
 
-        return k_sf,k_bw,k_fre
+        return k_sf,k_bw,k_fre,k_tp

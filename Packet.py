@@ -6,7 +6,7 @@ from ParameterConfig import *
 from Propagation import rssi,snr
 import math
 class myPacket:
-    def __init__(self, nodeid, PacketPara, distance, bs):
+    def __init__(self, nodeid, PacketPara, bs):
         # new: base station ID
         self.bs = bs
         self.nodeid = nodeid
@@ -20,16 +20,16 @@ class myPacket:
         self.fre = PacketPara.fre
         self.PS = PacketPara.PayloadSize
 
-        self.lost = True
+        self.lost = False
         # denote if packet is collided
         self.collided = 0
 
         self.minisensi = myPacket.GetReceiveSensitivity(self.sf,self.bw)
         self.miniSNR = myPacket.GetMiniSNR(self.sf)
 
-        self.RSSI = rssi(distance)
-        self.SNR = snr(self.RSSI,self.bw)
-
+        self.RSSI = 0
+        self.SNR = 0
+        
         self.rectime = myPacket.airtime(self.sf,self.cr,self.PS,self.bw)
         self.tx_energy = myPacket.calculate_energy(self.tp,self.rectime)
 

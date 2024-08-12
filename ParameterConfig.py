@@ -5,10 +5,14 @@ import numpy as np
 import simpy
 import matplotlib.pyplot as plt
 import torch
+import random
 # turn on/off graphics
 graphics = 1
 
-node_generation_seed = 42
+# store the results or not
+storage_flag = 0
+
+random_seed = 42
 
 # do the full collision check
 full_collision = False
@@ -31,25 +35,42 @@ sf12 = np.array([12,-136,-133,-130])
 # receiver sensitivities of different SF and Bandwidth combinations
 sensi = np.array([sf7,sf8,sf9,sf10,sf11,sf12])
 
+# maximum distance range of different settings (SF+Fre)
+# [125KHz,250kHz,500kHz]
+sf7_dis = np.array([1414,1243,1046])
+sf8_dis = np.array([1610,1414,1190])
+sf9_dis = np.array([1832,1542,1355])
+sf10_dis = np.array([2085,1755,1542])
+sf11_dis = np.array([2177,1913,1755])
+sf12_dis = np.array([2477,2177,1913])
+
+dis_range = np.array([sf7_dis,sf8_dis,sf9_dis,sf10_dis,sf11_dis,sf12_dis])
+
 # minimum SNR required for demodulation at different spreading factors
 SNR_Req = np.array([-7.5,-10,-12.5,-15,-17.5,-20])
-
 Bandwidth = np.array([125,250,500])
 SF = np.array([7,8,9,10,11,12])
 Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
+Transmission_Power = np.array([2,4,6,8,10,12,14])
+SF_BW = [[7,125],[7,250],[7,500],
+         [8,125],[8,250],[8,500],
+         [9,125],[9,250],[9,500],
+         [10,125],[10,250],[10,500],
+         [11,125],[11,250],[11,500],
+         [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 50
+nrNodes = 100
 nrBS = 1
-radius = 2500
+radius = 1500
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
-allocation_method = "polling"
+allocation_method = "MAB"
 nrNetworks = 1
-simtime = 1200000
+simtime = 400000
 directionality = 1
-full_collision = 1
+full_collision = True
 
 # global stuff
 action_choose_interval = 30000 # configuration update time of MAA2C
@@ -84,11 +105,11 @@ recPackets_interval = 0
 # number of not received packets during update interval
 lostPackets_interval = 0
 
+PDRPerNode = [] # PDRs of all nodes in each episode
+EnergyEfficiencyPerNode = [] # Energy efficiencies of all nodes in each episode
+
 global_observation = []
 next_global_observation = []
-
-average_cumulative_reward = []
-PDR = []
 
 # global value of packet sequence numbers
 packetSeq = 0
@@ -106,6 +127,9 @@ if (graphics == 1):
     plt.figure()
     ax = plt.gcf().gca()
 
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
 
 class LoRaParameters:
     sf = 9
@@ -123,7 +147,7 @@ class MAA2C_Config:
     dim_action_bw = Bandwidth.size
     dim_action_fre = Carrier_Frequency.size
     discount = 0.99 # discount coefficient
-    num_episode = 5000
+    num_episode = 2000
     receive_reward = 10
     lost_reward = -20
     fairness_weight = 0
@@ -131,7 +155,47 @@ class MAA2C_Config:
     random_seed = 3
 
 class MAB_Config:
+    MAB_Variant = 0 # 0: epsilon-greedy, 1: decaying-greedy, 2: UCB
+    
     coef = 1
-    epsilon = 0.25
+    epsilon = 0.05
+    decay_epsilon = 0.75
     random_seed = 2
-    num_episode = 4000    
+    num_episode = 5000
+
+    average_cumulative_reward = []
+
+    average_cumulative_reward_SF = []
+    average_cumulative_reward_BW = []
+    average_cumulative_reward_Fre = []
+    average_cumulative_reward_TP = []
+
+    Network_PDR = [] # Network PDRs of all episodes
+
+    MinPDR = [] # Minimum PDR of all nodes in each episode
+    MaxPDR = [] # Maximum PDR of all nodes in each episode
+    MinEnergyEfficiency = [] # Minimum energy efficiency of all nodes in each episode
+    MaxEnergyEfficiency = [] # Maximum energy efficiency of all nodes in each episode
+    
+    JainFairness = [] # Jain fairness of all nodes in each episode
+
+class Q_table_Config:
+    alpha = 0.1 # learning rate
+    gamma = 0.9 # discount factor
+    epsilon = 0.6 # initial greedy factor for decaying-greedy
+    random_seed = 1
+    buffer_size = 1000
+    batch_size = 64
+    num_episode = 5000 
+    experience_replay = False
+
+def Jain_Fairness_Index(nodes):
+    Suqare_of_Sum = 0
+    Sum_of_Square = 0
+    for node in nodes:
+        Sum_of_Square += node.EnergyEfficiency ** 2
+        Suqare_of_Sum += node.EnergyEfficiency
+    Sum_of_Square = len(nodes) * (Sum_of_Square)
+    Suqare_of_Sum = Suqare_of_Sum ** 2
+    Jain_Fairness = float(Suqare_of_Sum) / float(Sum_of_Square)
+    return Jain_Fairness
