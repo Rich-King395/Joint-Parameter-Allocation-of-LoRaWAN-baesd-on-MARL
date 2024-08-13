@@ -96,6 +96,7 @@ def timingCollision(p1, p2):
 
 def rssi(Ptx,distance):
     Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
+    #  Lpl = Lpld0+10*gamma*math.log10(distance/d0)
     # print (Lpl)
     Prx = Ptx + GL - Lpl
     return Prx

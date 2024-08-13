@@ -91,8 +91,8 @@ class myNode:
                  PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = random_allocation()
             elif allocation_method == "ADR":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
-            elif allocation_method == "polling":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre = polling_allocation(self.id)
+            elif allocation_method == "Round Robin":
+                 PacketPara.sf,PacketPara.bw,PacketPara.fre = round_robin_allocation(self.id)
             elif allocation_method == "MARL":                     
                  PacketPara.sf = SF[self.agent.action[0]]
             elif allocation_method == "MAB":

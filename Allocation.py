@@ -8,7 +8,7 @@ def random_allocation():
     sf = random.randint(7,12)
     bw = random.choice([125,250,500])
     fre = random.choice(Carrier_Frequency)
-    tp = random.choice(Transmission_Power)
+    tp = 14
     return sf,bw,fre,tp
 
 #choose the closest SF and bw config according to distance between node and gateway and receive sensitivity
@@ -25,7 +25,7 @@ def closest_allocation(distance):
                 closest_bw = bw
     return closest_sf,closest_bw,fre
 
-def polling_allocation(id):
+def round_robin_allocation(id):
     nodeid = id
     nodeid = nodeid % 48
     sf = (nodeid // 8) + 7

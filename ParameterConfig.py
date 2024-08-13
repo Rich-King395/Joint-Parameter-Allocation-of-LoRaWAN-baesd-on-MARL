@@ -10,7 +10,7 @@ import random
 graphics = 1
 
 # store the results or not
-storage_flag = 0
+storage_flag = 1
 
 random_seed = 42
 
@@ -62,13 +62,13 @@ SF_BW = [[7,125],[7,250],[7,500],
 # adaptable LoRaWAN parameters to users
 nrNodes = 50
 nrBS = 1
-radius = 1000
+radius = 1500
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
-allocation_method = "Random"
+allocation_method = "ADR"
 nrNetworks = 1
-simtime =1200000
+simtime =400000
 directionality = 1
 full_collision = True
 
@@ -132,7 +132,7 @@ def set_seed(seed):
     np.random.seed(seed)
 
 class LoRaParameters:
-    sf = 9
+    sf = 12
     cr = 1
     bw = 125
     tp = 14
@@ -155,9 +155,9 @@ class MAA2C_Config:
     random_seed = 3
 
 class MAB_Config:
-    MAB_Variant = 0 # 0: epsilon-greedy, 1: decaying-greedy, 2: UCB
+    MAB_Variant = 2 # 0: epsilon-greedy, 1: decaying-greedy, 2: UCB
     
-    coef = 1
+    coef = 1 # coefficient of UCB
     epsilon = 0.05
     decay_epsilon = 0.75
     random_seed = 2

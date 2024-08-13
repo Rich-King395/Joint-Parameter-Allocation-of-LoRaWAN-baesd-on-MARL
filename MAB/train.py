@@ -243,3 +243,5 @@ def Config_Record(experiment_results_folder_path):
             file.write('MAB type: Decaying-Epsilon Greedy\n')
         elif MAB_Config.MAB_Variant == 2:
             file.write('MAB type: UCB(Upper Confidence Bound)\n')
+            file.write('Alpha: {}\n'.format(MAB_Config.coef))
+            file.write('Number of training episodes: {}\n'.format(MAB_Config.num_episode))
