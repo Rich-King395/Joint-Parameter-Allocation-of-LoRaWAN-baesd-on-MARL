@@ -62,21 +62,6 @@ class myNode:
 
         if allocation_type == "Global":
             myNode.Generate_Packet(self)
-
-        # graphics for node
-        global graphics
-        if (graphics == 1):
-            global ax
-            if (self.bs.id == 0):
-                    ax.add_artist(plt.Circle((self.x, self.y), 4, fill=True, color='blue'))
-            if (self.bs.id == 1):
-                    ax.add_artist(plt.Circle((self.x, self.y), 4, fill=True, color='red'))
-            if (self.bs.id == 2):
-                    ax.add_artist(plt.Circle((self.x, self.y), 4, fill=True, color='green'))
-            if (self.bs.id == 3):
-                    ax.add_artist(plt.Circle((self.x, self.y), 4, fill=True, color='brown'))
-            if (self.bs.id == 4):
-                    ax.add_artist(plt.Circle((self.x, self.y), 4, fill=True, color='orange'))
     
     # node generate "virtul" packets for each gateway
     def Generate_Packet(self):
@@ -333,3 +318,17 @@ def transmit(env,node):
                 # reset the packet
                 node.packet[bs].collided = 0
                 # node.packet[bs].processed = 0
+
+
+'''Graphics for node'''
+def graphics_node(node,ax):
+    if (node.bs.id == 0):
+            ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='blue'))
+    if (node.bs.id == 1):
+            ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='red'))
+    if (node.bs.id == 2):
+            ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='green'))
+    if (node.bs.id == 3):
+            ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='brown'))
+    if (node.bs.id == 4):
+            ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='orange'))

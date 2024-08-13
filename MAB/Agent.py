@@ -47,9 +47,9 @@ class MAB:
         self.Q_BW[k_bw] +=  (self.reward - self.Q_SF[k_bw]) / (self.counts_BW[k_bw] + 1)
         self.Q_Fre[k_fre] += (self.reward - self.Q_Fre[k_fre]) / (self.counts_Fre[k_fre] + 1)
         if self.reward == 1:
-            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/30)
+            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
         elif self.reward == -1:
-            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/30)
+            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
         self.Q_TP[k_tp] += (self.reward - self.Q_TP[k_tp]) / (self.counts_TP[k_tp] + 1)
 
 

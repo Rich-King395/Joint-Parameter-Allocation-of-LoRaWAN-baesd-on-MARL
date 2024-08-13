@@ -1,0 +1,32 @@
+--------Network Parameter Setting--------
+Nodes per base station: 50
+Packet generation interval: 4000 ms
+LoRa parameters allocation type: Local
+LoRa parameters allocation method: MAB
+Simulation duration: 0.33 h
+Number of gateways: 1
+Collision check mode: Full Collision Check
+Antenna type: Directional antenna
+Number of networks: 1
+Network topology radius: 1000 m
+Packet payload size: 20
+
+--------MAB Configuration--------
+MAB type: UCB(Upper Confidence Bound)
+Alpha: 2
+Number of training episodes: 4000
+
+--------Simulation Results--------
+Total number of packets sent: 14113
+Number of received packets: 12755
+Number of collided packets: 507
+Number of lost packets: 849
+Total payload size: 282260 bytes
+Received payload size: 255100 bytes
+Total transmission energy consumption: 23338.663 Joule
+Network PDR(Packet Delivery Rate): 90.38 %
+Minimum PDR: 67.42 %
+Maximum PDR: 96.94 %
+Network Energy efficiency: 10.930 bits/mJ
+Minimum Energy efficiency: 3.635 bits/mJ
+Jain's fairness index: 0.412

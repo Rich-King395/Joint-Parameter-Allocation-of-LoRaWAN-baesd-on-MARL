@@ -12,7 +12,6 @@ def MAB_train(nodes):
     # log = defaultdict(list)
     if ParameterConfig.storage_flag == 1:
         result_folder_path, result_file_path = result_file()
-        Config_Record(result_folder_path)
 
     # set_seed(random_seed)
 
@@ -64,7 +63,10 @@ def MAB_train(nodes):
         ParameterConfig.EnergyEfficiencyPerNode = []
 
         # interact with the environment
-        env.run(until=ParameterConfig.simtime)
+        if episode == MAB_Config.num_episode-1:
+            env.run(until=ParameterConfig.simtime)
+        else:
+            env.run(until=ParameterConfig.traininterveltime)
 
         if MAB_Config.MAB_Variant == 1:
             MAB_Config.decay_epsilon -=  float(MAB_Config.decay_epsilon / MAB_Config.num_episode)
@@ -93,6 +95,7 @@ def MAB_train(nodes):
         MinEnergyEfficiency = min(ParameterConfig.EnergyEfficiencyPerNode)
         MaxEnergyEfficiency = max(ParameterConfig.EnergyEfficiencyPerNode)
         JainFairness = Jain_Fairness_Index(nodes)
+        NetworkEnergyEfficiency =  ParameterConfig.RecPacketSize / float(ParameterConfig.TotalEnergyConsumption)
 
         MAB_Config.average_cumulative_reward.append(total_cumulative_reward/len(nodes))
         MAB_Config.MinPDR.append(min(ParameterConfig.PDRPerNode))
@@ -121,7 +124,58 @@ def MAB_train(nodes):
         # print(f"episode={episode}, mum of sent packets={sumSent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}")
         print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={JainFairness:.2f}, PDR={pdr:.2f}")
 
-    
+        if episode == MAB_Config.num_episode-1:
+            if ParameterConfig.storage_flag == 1:
+                config_file = "MAB-Result.txt" # txt results of each episode in training process
+                config_file_path = os.path.join(result_folder_path, config_file)
+                with open(config_file_path, 'w') as file:
+                    file.write('--------Network Parameter Setting--------\n')
+                    file.write('Nodes per base station: {}\n'.format(ParameterConfig.nrNodes))
+                    file.write('Packet generation interval: {} ms\n'.format(ParameterConfig.avgSendTime))
+                    file.write('LoRa parameters allocation type: {}\n'.format(ParameterConfig.allocation_type))
+                    file.write('LoRa parameters allocation method: {}\n'.format(ParameterConfig.allocation_method))
+                    file.write('Simulation duration: {} h\n'.format(round(ParameterConfig.simtime/3600000, 2)))
+                    file.write('Number of gateways: {}\n'.format(ParameterConfig.nrBS))
+                    if full_collision == 1:
+                        file.write('Collision check mode: Full Collision Check\n')
+                    else:
+                        file.write('Collision check mode: Simple Collision Check\n')
+                    if directionality == 1:
+                        file.write('Antenna type: Directional antenna\n')
+                    else:
+                        file.write('Antenna type: Omnidirectional antenna\n')
+                    file.write('Number of networks: {}\n'.format(ParameterConfig.nrNetworks))
+                    file.write('Network topology radius: {} m\n'.format(ParameterConfig.radius))
+                    file.write('Packet payload size: {}\n\n'.format(ParameterConfig.PayloadSize))
+
+                    file.write('--------MAB Configuration--------\n')
+                    if MAB_Config.MAB_Variant == 0:
+                        file.write('MAB type: Epsilon Greedy\n')
+                        file.write('Epsilon: {}\n'.format(MAB_Config.epsilon))
+                        file.write('Number of training episodes: {}\n'.format(MAB_Config.num_episode))
+                    elif MAB_Config.MAB_Variant == 1:
+                        file.write('MAB type: Decaying-Epsilon Greedy\n')
+                    elif MAB_Config.MAB_Variant == 2:
+                        file.write('MAB type: UCB(Upper Confidence Bound)\n')
+                        file.write('Alpha: {}\n'.format(MAB_Config.coef))
+                        file.write('Number of training episodes: {}\n\n'.format(MAB_Config.num_episode))
+
+                    file.write('--------Simulation Results--------\n')
+                    file.write("Total number of packets sent: {}\n".format(sumSent))
+                    file.write("Number of received packets: {}\n".format(num_rec))
+                    file.write("Number of collided packets: {}\n".format(len(ParameterConfig.collidedPackets)))
+                    file.write("Number of lost packets: {}\n".format(len(ParameterConfig.lostPackets)))
+                    file.write("Total payload size: {} bytes\n".format(ParameterConfig.TotalPacketSize))
+                    file.write("Received payload size: {} bytes\n".format(ParameterConfig.RecPacketSize))
+                    file.write("Total transmission energy consumption: {:.3f} Joule\n".format(ParameterConfig.TotalEnergyConsumption))
+                    file.write("Network PDR(Packet Delivery Rate): {:.2f} %\n".format(pdr))
+                    file.write("Minimum PDR: {:.2f} %\n".format(min(ParameterConfig.PDRPerNode)))
+                    file.write("Maximum PDR: {:.2f} %\n".format(max(ParameterConfig.PDRPerNode)))
+                    file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(NetworkEnergyEfficiency))
+                    file.write("Minimum Energy efficiency: {:.3f} bits/mJ\n".format(MinEnergyEfficiency))
+                    file.write("Jain's fairness index: {:.3f}".format(JainFairness))
+                    file.close()
+        
     # end of training
     # show results
     if ParameterConfig.storage_flag == 1:
@@ -205,43 +259,11 @@ def result_file():
      results_folder_path = os.path.join(mab_folder_path, 'Results') # results folder stores results of different experiments
      experiment_results_folder = datetime.now().strftime("%Y-%m-%d_%H-%M") # create a results folder for each experiment
      experiment_results_folder_path = os.path.join(results_folder_path,experiment_results_folder)
+     ParameterConfig.result_folder_path = experiment_results_folder_path
      '''check whether the folder exists, if not, create it'''
      if not os.path.exists(experiment_results_folder_path):
         os.makedirs(experiment_results_folder_path)
      result_file = "MAB-traning-results.txt" # txt results of each episode in training process
      result_file_path = os.path.join(experiment_results_folder_path, result_file)
      return experiment_results_folder_path, result_file_path
-
-def Config_Record(experiment_results_folder_path):
-    config_file = "MAB-config.txt" # txt results of each episode in training process
-    config_file_path = os.path.join(experiment_results_folder_path, config_file)
-    with open(config_file_path, 'w') as file:
-        file.write('--------Network Parameter Setting--------\n')
-        file.write('Nodes per base station: {}\n'.format(ParameterConfig.nrNodes))
-        file.write('Packet generation interval: {} ms\n'.format(ParameterConfig.avgSendTime))
-        file.write('LoRa parameters allocation type: {}\n'.format(ParameterConfig.allocation_type))
-        file.write('LoRa parameters allocation method: {}\n'.format(ParameterConfig.allocation_method))
-        file.write('Simulation duration: {} h\n'.format(round(ParameterConfig.simtime/3600000, 2)))
-        file.write('Number of gateways: {}\n'.format(ParameterConfig.nrBS))
-        if full_collision == 1:
-            file.write('Collision check mode: Full Collision Check\n')
-        else:
-            file.write('Collision check mode: Simple Collision Check\n')
-        if directionality == 1:
-            file.write('Antenna type: Directional antenna\n')
-        else:
-            file.write('Antenna type: Omnidirectional antenna\n')
-        file.write('Number of networks: {}\n'.format(ParameterConfig.nrNetworks))
-        file.write('Network topology radius: {} m\n'.format(ParameterConfig.radius))
-        file.write('Packet payload size: {}\n\n'.format(ParameterConfig.PayloadSize))
-        file.write('--------MAB Configuration--------\n')
-        if MAB_Config.MAB_Variant == 0:
-            file.write('MAB type: Epsilon Greedy\n')
-            file.write('Epsilon: {}\n'.format(MAB_Config.epsilon))
-            file.write('Number of training episodes: {}\n'.format(MAB_Config.num_episode))
-        elif MAB_Config.MAB_Variant == 1:
-            file.write('MAB type: Decaying-Epsilon Greedy\n')
-        elif MAB_Config.MAB_Variant == 2:
-            file.write('MAB type: UCB(Upper Confidence Bound)\n')
-            file.write('Alpha: {}\n'.format(MAB_Config.coef))
-            file.write('Number of training episodes: {}\n'.format(MAB_Config.num_episode))
+    

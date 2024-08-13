@@ -12,6 +12,9 @@ graphics = 1
 # store the results or not
 storage_flag = 1
 
+# folder path of the results
+result_folder_path = "/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL"
+
 random_seed = 42
 
 # do the full collision check
@@ -60,17 +63,21 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 50
+nrNodes = 150
 nrBS = 1
 radius = 1500
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
-allocation_method = "ADR"
+# allocation_method = "ADR"
+allocation_method = "MAB"
+# allocation_method = "Round Robin"
 nrNetworks = 1
-simtime =400000
+simtime = 1200000
 directionality = 1
 full_collision = True
+
+traininterveltime = 400000
 
 # global stuff
 action_choose_interval = 30000 # configuration update time of MAA2C
@@ -122,10 +129,10 @@ Lpld0 = 128.95
 GL = 0
 
 # prepare graphics and add sink
-if (graphics == 1):
-    plt.ion()
-    plt.figure()
-    ax = plt.gcf().gca()
+# if (graphics == 1):
+#     plt.ion()
+#     plt.figure()
+#     ax = plt.gcf().gca()
 
 def set_seed(seed):
     random.seed(seed)
@@ -157,11 +164,11 @@ class MAA2C_Config:
 class MAB_Config:
     MAB_Variant = 2 # 0: epsilon-greedy, 1: decaying-greedy, 2: UCB
     
-    coef = 1 # coefficient of UCB
+    coef = 2 # coefficient of UCB
     epsilon = 0.05
     decay_epsilon = 0.75
     random_seed = 2
-    num_episode = 5000
+    num_episode = 4000
 
     average_cumulative_reward = []
 
@@ -186,7 +193,7 @@ class Q_table_Config:
     random_seed = 1
     buffer_size = 1000
     batch_size = 64
-    num_episode = 5000 
+    num_episode = 4000
     experience_replay = False
 
 def Jain_Fairness_Index(nodes):

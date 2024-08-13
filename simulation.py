@@ -2,8 +2,8 @@ import random
 import os
 from ParameterConfig import *
 import ParameterConfig
-from Gateway import myBS
-from Node import myNode, transmit
+from Gateway import myBS, graphics_gateway
+from Node import myNode, transmit, graphics_node
 from datetime import datetime
 from MAB.train import MAB_train
 class Simulation:
@@ -24,11 +24,7 @@ class Simulation:
 
         self.MinEnergyEfficiency = 0 # Minimum energy efficiency among the nodes (bits/mJoule)
         self.JainFairness = 0 # Jain's fairness index
-        self.file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.folder_path = os.path.join(os.getcwd(), "results")
-        self.folder_path = os.path.join(self.folder_path,self.file_name)
-        if not os.path.exists(self.folder_path):
-            os.makedirs(self.folder_path)
+        ParameterConfig.result_folder_path, self.result_file = result_file()
 
     def run(self):
         # generate BS
@@ -63,34 +59,42 @@ class Simulation:
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
             id += 1
+        
+        if allocation_method=="MAB":
+            set_seed(random_seed)
+            MAB_train(nodes)
+        else:
+        # traditional algorithms do not need training stage, start simulation until simtime
+            set_seed(random_seed)
+            env.run(until=simtime)
 
         # store nodes and basestation locations
         if storage_flag == 1:  
-            node_path = os.path.join(self.folder_path, self.file_name+"-node.txt")
+            node_path = os.path.join(ParameterConfig.result_folder_path, "node.txt")
             with open(node_path, 'w') as nfile:
                 for node in nodes:
                     nfile.write('{x} {y} {id}\n'.format(**vars(node)))
 
-            basestation = os.path.join(self.folder_path, self.file_name+"-basestation.txt")
+            basestation = os.path.join(ParameterConfig.result_folder_path, "basestation.txt")
             with open(basestation, 'w') as bfile:
                 for basestation in bs:
                     bfile.write('{x} {y} {id}\n'.format(**vars(basestation)))
 
         # prepare show
         if (graphics == 1):
+            plt.figure(figsize=(6, 6))
+            ax = plt.gcf().gca()
+            for GW in bs:
+                graphics_gateway(GW,ax)
+            for node in nodes:
+                graphics_node(node,ax)
             plt.xlim([-radius, radius])
             plt.ylim([-radius, radius])
-            plt.draw()
-            plt.show()
+            # plt.draw()
+            # plt.show()
             if storage_flag == 1:  
-                fig3_name = 'network_tropology.png'
-                plt.savefig(os.path.join(self.folder_path, fig3_name))
-        
-        if allocation_method=="MAB":
-            MAB_train(nodes)
-        else:
-        # traditional algorithms do not need training stage, start simulation until simtime
-            env.run(until=simtime)          
+                fig_name = 'network_tropology.png'
+                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name))          
 
     def results_calculation(self):
         for i in range(0,nrBS):
@@ -146,13 +150,13 @@ class Simulation:
         # print ("avg DER: {:.2f}".format(self.avgDER))
         # print ("DER with 1 network:{:.2f}".format(self.PDRAll))
 
-        print("Network PDR(Packet Delivery Rate): {:.2f} %".format(self.PDRAll))
-        print("Minimum PDR: {:.2f} %".format(self.PDRMin))
-        print("Maximum PDR: {:.2f} %".format(self.PDRMax))
         print ("Total payload size: {} bytes".format(ParameterConfig.TotalPacketSize))
         print ("Received payload size: {} bytes".format(ParameterConfig.RecPacketSize))
         print ("Total transmission energy consumption: {:.3f} Joule".format(ParameterConfig.TotalEnergyConsumption))
         print ("Network throughput: {:.3f} bps".format(self.throughput))
+        print("Network PDR(Packet Delivery Rate): {:.2f} %".format(self.PDRAll))
+        print("Minimum PDR: {:.2f} %".format(self.PDRMin))
+        print("Maximum PDR: {:.2f} %".format(self.PDRMax))
         print ("Network Energy efficiency: {:.3f} bits/mJ".format(self.EnergyEfficiency))
         print ("Minimum Energy efficiency: {:.3f} bits/mJ".format(self.MinEnergyEfficiency))
         print ("Jain's fairness index: {:.3e}".format(self.JainFairness))
@@ -162,9 +166,7 @@ class Simulation:
             input('Press Enter to continue ...')
     
     def simulation_record(self):
-        result_file_name = self.file_name+"-result.txt"   
-        file_path = os.path.join(self.folder_path, result_file_name)
-        with open(file_path, 'w') as file:
+        with open(self.result_file, 'w') as file:
             file.write('Simulation start at {}'.format(self.simstarttime))
             file.write(' and end at {}\n'.format(self.simendtime))
             file.write('--------Parameter Setting--------\n')
@@ -191,22 +193,41 @@ class Simulation:
             file.write("Number of received packets: {}\n".format(len(recPackets)))
             file.write("Number of collided packets: {}\n".format(len(collidedPackets)))
             file.write("Number of lost packets: {}\n".format(len(lostPackets)))
-            for i in range(0, nrBS):
-                file.write("send to BS[{}".format(i))
-                file.write("]: {}\n".format(self.sent[i])) # number of packets sent to each BS
-            for i in range(0,nrBS):
-                file.write("packets at BS {}".format(i))
-                file.write(": {}\n".format(len(packetsRecBS[i]))) # received packets of each BS
-            file.write("overall received at right BS: {}\n".format(self.sum))
-            for i in range(0, nrBS):
-                file.write("DER BS[".format(i))
-                file.write("]: {:.2f}%\n".format(self.der[i]))    
-            file.write("avg DER: {:.2f}%\n".format(self.avgDER))
-            file.write("DER with 1 network: {:.2f}%\n".format(self.PDRAll))
+
+            # for i in range(0, nrBS):
+            #     file.write("send to BS[{}".format(i))
+            #     file.write("]: {}\n".format(self.sent[i])) # number of packets sent to each BS
+            # for i in range(0,nrBS):
+            #     file.write("packets at BS {}".format(i))
+            #     file.write(": {}\n".format(len(packetsRecBS[i]))) # received packets of each BS
+            # file.write("overall received at right BS: {}\n".format(self.sum))
+            # for i in range(0, nrBS):
+            #     file.write("DER BS[".format(i))
+            #     file.write("]: {:.2f}%\n".format(self.der[i]))  
+
+            # file.write("avg DER: {:.2f}%\n".format(self.avgDER))
+            # file.write("DER with 1 network: {:.2f}%\n".format(self.PDRAll))
+
             file.write("Total payload size: {} bytes\n".format(ParameterConfig.TotalPacketSize))
             file.write("Received payload size: {} bytes\n".format(ParameterConfig.RecPacketSize))
             file.write("Total transmission energy consumption: {:.3f} Joule\n".format(ParameterConfig.TotalEnergyConsumption))
             file.write("Network throughput: {:.3f} bps\n".format(self.throughput))
-            file.write("Network Energy efficiency: {:.3f} bit/Joule\n".format(self.EnergyEfficiency))
-            file.write("Minimum Energy efficiency: {:.3f} bits/mJ".format(self.MinEnergyEfficiency))
+            file.write("Network PDR(Packet Delivery Rate): {:.2f} %\n".format(self.PDRAll))
+            file.write("Minimum PDR: {:.2f} %\n".format(self.PDRMin))
+            file.write("Maximum PDR: {:.2f} %\n".format(self.PDRMax))
+            file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(self.EnergyEfficiency))
+            file.write("Minimum Energy efficiency: {:.3f} bits/mJ\n".format(self.MinEnergyEfficiency))
+            file.write("Jain's fairness index: {:.3f}".format(self.JainFairness))
+
+def result_file():
+     baseline_folder_path = '/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL' 
+     results_folder_path = os.path.join(baseline_folder_path, 'Baseline_Results') # results folder stores results of different experiments
+     experiment_results_folder = datetime.now().strftime("%Y-%m-%d_%H-%M") # create a results folder for each experiment
+     experiment_results_folder_path = os.path.join(results_folder_path,experiment_results_folder)
+     '''check whether the folder exists, if not, create it'''
+     if not os.path.exists(experiment_results_folder_path):
+        os.makedirs(experiment_results_folder_path)
+     result_file = allocation_method+"-Result.txt" # txt results of each episode in training process
+     result_file_path = os.path.join(experiment_results_folder_path, result_file)
+     return experiment_results_folder_path, result_file_path
 

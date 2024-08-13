@@ -50,21 +50,19 @@ class myBS:
             if self.id == 3:
                 self.x = -a
                 self.y = -a
-                
-        global graphics
-        if (graphics):
-            global ax
-            # XXX should be base station position
-            # deaw different BSs according to their ids
-            if (self.id == 0):
-                ax.add_artist(plt.Circle((self.x, self.y), 10, fill=True, color='red'))
-                # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='blue'))
-            if (self.id == 1):
-                ax.add_artist(plt.Circle((self.x, self.y), 10, fill=True, color='red'))
-                # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='red'))
-            if (self.id == 2):
-                ax.add_artist(plt.Circle((self.x, self.y), 10, fill=True, color='green'))
-                # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='green'))
-            if (self.id == 3):
-                ax.add_artist(plt.Circle((self.x, self.y), 10, fill=True, color='brown'))
-                # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='brown'))
+
+def graphics_gateway(GW,ax):     
+    # XXX should be base station position
+    # deaw different BSs according to their ids
+    if (GW.id == 0):
+        ax.add_artist(plt.Circle((GW.x, GW.y), 10*(radius/1000), fill=True, color='red'))
+        # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='blue'))
+    if (GW.id == 1):
+        ax.add_artist(plt.Circle((GW.x, GW.y), 10*(radius/1000), fill=True, color='red'))
+        # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='red'))
+    if (GW.id == 2):
+        ax.add_artist(plt.Circle((GW.x, GW.y), 10*(radius/1000), fill=True, color='green'))
+        # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='green'))
+    if (GW.id == 3):
+        ax.add_artist(plt.Circle((GW.x, GW.y), 10*(radius/1000), fill=True, color='brown'))
+        # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='brown'))
