@@ -9,6 +9,7 @@ def random_allocation():
     bw = random.choice([125,250,500])
     fre = random.choice(Carrier_Frequency)
     tp = 14
+    # tp = random.choice(Transmission_Power)
     return sf,bw,fre,tp
 
 #choose the closest SF and bw config according to distance between node and gateway and receive sensitivity
