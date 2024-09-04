@@ -15,7 +15,7 @@ def MAB_train(nodes):
 
     # set_seed(random_seed)
 
-    for episode in range(MAB_Config.num_episode):
+    for episode in range(MAB_Config.num_episode+1):
         '''
           initialize the environment at the beginning of episode
         '''
@@ -63,16 +63,21 @@ def MAB_train(nodes):
         ParameterConfig.EnergyEfficiencyPerNode = []
 
         # interact with the environment
-        if episode == MAB_Config.num_episode-1:
+        if episode == MAB_Config.num_episode:
+            set_seed(random_seed) # reinitialize the random seed
             env.run(until=ParameterConfig.simtime)
         else:
+            # set_seed(random_seed) # reinitialize the random seed
             env.run(until=ParameterConfig.traininterveltime)
 
         if MAB_Config.MAB_Variant == 1:
             MAB_Config.decay_epsilon -=  float(MAB_Config.decay_epsilon / MAB_Config.num_episode)
 
-        # average cumulative reward of the node in this episode
-        total_cumulative_reward = 0
+        # average cumulative rewards of the nodes in this episode
+        total_cumulative_reward_SF = 0 
+        total_cumulative_reward_BW = 0
+        total_cumulative_reward_Fre = 0
+        total_cumulative_reward_TP = 0
         sumSent = 0 # total number of packets sent in this episode
         sumPowerLost = 0 # total number of packets lost in this episode
         sumCollided = 0 # total number of packets collided in this episode
@@ -84,34 +89,48 @@ def MAB_train(nodes):
             node.sent = 0
             node.collided = 0
             node.powerlost = 0
-            total_cumulative_reward += node.agent.cumulative_reward
-            node.agent.cumulative_reward = 0
+            total_cumulative_reward_SF += node.agent.cumulative_reward_SF
+            total_cumulative_reward_BW += node.agent.cumulative_reward_BW
+            total_cumulative_reward_Fre += node.agent.cumulative_reward_Fre
+            total_cumulative_reward_TP += node.agent.cumulative_reward_TP
+            node.agent.cumulative_reward_SF = 0
+            node.agent.cumulative_reward_BW = 0
+            node.agent.cumulative_reward_Fre = 0
+            node.agent.cumulative_reward_TP = 0
 
             node.PDR = 100*((node.rec_interval)/float(node.sent_interval))
             ParameterConfig.PDRPerNode.append(node.PDR)
             node.EnergyEfficiency = node.RecPacketSize / float(node.EnergyConsumption)
             ParameterConfig.EnergyEfficiencyPerNode.append(node.EnergyEfficiency)
+        
 
+        NetThroughput = 8 * float(ParameterConfig.RecPacketSize) / ParameterConfig.TotalPacketAirtime
         MinEnergyEfficiency = min(ParameterConfig.EnergyEfficiencyPerNode)
         MaxEnergyEfficiency = max(ParameterConfig.EnergyEfficiencyPerNode)
         JainFairness = Jain_Fairness_Index(nodes)
-        NetworkEnergyEfficiency =  ParameterConfig.RecPacketSize / float(ParameterConfig.TotalEnergyConsumption)
-
-        MAB_Config.average_cumulative_reward.append(total_cumulative_reward/len(nodes))
-        MAB_Config.MinPDR.append(min(ParameterConfig.PDRPerNode))
-        MAB_Config.MaxPDR.append(max(ParameterConfig.PDRPerNode))
-        MAB_Config.MinEnergyEfficiency.append(min(ParameterConfig.EnergyEfficiencyPerNode))
-        MAB_Config.MaxEnergyEfficiency.append(max(ParameterConfig.EnergyEfficiencyPerNode))
-        MAB_Config.JainFairness.append(Jain_Fairness_Index(nodes))
-
-        end_sim_time = time.time()
-        sim_time_per_episode = end_sim_time - start_sim_time 
+        NetEnergyEfficiency =  ParameterConfig.RecPacketSize / float(ParameterConfig.TotalEnergyConsumption)
 
         num_rec = len(ParameterConfig.recPackets)
         num_lost = len(ParameterConfig.collidedPackets) + len(ParameterConfig.lostPackets)
         pdr = float(num_rec/sumSent)*100 # Network PDR
 
-        MAB_Config.Network_PDR.append(pdr)
+        if episode != MAB_Config.num_episode:
+            MAB_Config.average_cumulative_reward_SF.append(total_cumulative_reward_SF/len(nodes))
+            MAB_Config.average_cumulative_reward_BW.append(total_cumulative_reward_BW/len(nodes))
+            MAB_Config.average_cumulative_reward_Fre.append(total_cumulative_reward_Fre/len(nodes))
+            MAB_Config.average_cumulative_reward_TP.append(total_cumulative_reward_TP/len(nodes))
+
+            MAB_Config.MinPDR.append(NetThroughput)
+            MAB_Config.Network_Throughput.append(max(ParameterConfig.PDRPerNode))
+            MAB_Config.MaxPDR.append(max(ParameterConfig.PDRPerNode))
+            MAB_Config.MinEnergyEfficiency.append(min(ParameterConfig.EnergyEfficiencyPerNode))
+            MAB_Config.MaxEnergyEfficiency.append(max(ParameterConfig.EnergyEfficiencyPerNode))
+            MAB_Config.NetworkEnergyEfficiency.append(NetEnergyEfficiency)
+            MAB_Config.JainFairness.append(Jain_Fairness_Index(nodes))
+            MAB_Config.Network_PDR.append(pdr)
+
+        end_sim_time = time.time()
+        sim_time_per_episode = end_sim_time - start_sim_time 
 
         if ParameterConfig.storage_flag == 1:
             with open(result_file_path, 'a') as file:
@@ -124,7 +143,7 @@ def MAB_train(nodes):
         # print(f"episode={episode}, mum of sent packets={sumSent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}")
         print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={JainFairness:.2f}, PDR={pdr:.2f}")
 
-        if episode == MAB_Config.num_episode-1:
+        if episode == MAB_Config.num_episode:
             if ParameterConfig.storage_flag == 1:
                 config_file = "MAB-Result.txt" # txt results of each episode in training process
                 config_file_path = os.path.join(result_folder_path, config_file)
@@ -169,93 +188,22 @@ def MAB_train(nodes):
                     file.write("Received payload size: {} bytes\n".format(ParameterConfig.RecPacketSize))
                     file.write("Total transmission energy consumption: {:.3f} Joule\n".format(ParameterConfig.TotalEnergyConsumption))
                     file.write("Network PDR(Packet Delivery Rate): {:.2f} %\n".format(pdr))
+                    file.write("Network throughput: {:.3f} bps\n".format(NetThroughput))
+                    file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(NetEnergyEfficiency))
                     file.write("Minimum PDR: {:.2f} %\n".format(min(ParameterConfig.PDRPerNode)))
                     file.write("Maximum PDR: {:.2f} %\n".format(max(ParameterConfig.PDRPerNode)))
-                    file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(NetworkEnergyEfficiency))
+                    file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(NetEnergyEfficiency))
                     file.write("Minimum Energy efficiency: {:.3f} bits/mJ\n".format(MinEnergyEfficiency))
                     file.write("Jain's fairness index: {:.3f}".format(JainFairness))
                     file.close()
-        
+            
     # end of training
     # show results
     if ParameterConfig.storage_flag == 1:
-        '''Max PDR & Min PDR'''
-        plt.figure()
-        x = range(1,MAB_Config.num_episode+1)
-        plt.plot(x, MAB_Config.MaxPDR, label='MaxPDR', color='blue')
-        plt.plot(x, MAB_Config.MinPDR, label='MinPDR', color='red')
-
-        plt.title('Max PDR and Min PDR changes with increasing episode')
-        plt.xlabel('Episode')
-        plt.ylabel('PDR')
-        plt.legend()
-
-        fig1_name = 'MaxMinPDR_plot.png'
-        plt.savefig(os.path.join(result_folder_path, fig1_name))
-
-        '''Min Energy Efficiency'''
-        plt.figure()
-        x = range(1,MAB_Config.num_episode+1)
-        plt.plot(x, MAB_Config.MinEnergyEfficiency, label='MinEnergyEfficiency', color='blue')
-
-        plt.title('Minimum Energy Efficiency changes with increasing episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Energy Efficiency/(bits/mJ)')
-        plt.legend()
-
-        fig2_name = 'MinEnergyEfficiency_plot.png'
-        plt.savefig(os.path.join(result_folder_path, fig2_name))
-
-        '''Max Energy Efficiency'''
-        plt.figure()
-        x = range(1,MAB_Config.num_episode+1)
-        plt.plot(x, MAB_Config.MaxEnergyEfficiency, label='MaxEnergyEfficiency', color='blue')
-
-        plt.title('Maximum Energy Efficiency changes with increasing episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Energy Efficiency/(bits/mJ)')
-        plt.legend()
-
-        fig3_name = 'MaxEnergyEfficiency_plot.png'
-        plt.savefig(os.path.join(result_folder_path, fig3_name))
-
-        '''Jain's Faireness Index'''
-        plt.figure()
-        x = range(1,MAB_Config.num_episode+1)
-        plt.plot(x, MAB_Config.JainFairness, label='Jain Faireness Index', color='blue')
-
-        plt.title('Jains Faireness Index changes with increasing episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Jains Faireness Index')
-        plt.legend()
-
-        fig4_name = 'JainsFairenessIndex_plot.png'
-        plt.savefig(os.path.join(result_folder_path, fig4_name))
-
-        '''Average cumulative reward'''
-        plt.figure()
-        x = range(1,MAB_Config.num_episode+1)
-        plt.plot(x, MAB_Config.average_cumulative_reward, '-', color='b')
-
-        plt.title('Average cumulative reward changes with increasing episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Average Cumulative Reward')
-
-        fig5_name = 'Average_Cumulative_Reward_plot.png'
-        plt.savefig(os.path.join(result_folder_path, fig5_name))
-
-        '''Network PDR'''
-        plt.figure()
-        plt.plot(x, MAB_Config.Network_PDR, '-', color='b')
-        plt.title('Network PDR changes with increasing episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Network PDR')
-
-        fig6_name = 'Network_PDR_plot.png'
-        plt.savefig(os.path.join(result_folder_path, fig6_name))
+        plot(result_folder_path)
 
 def result_file():
-     mab_folder_path = 'Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/MAB' # store the results folder unber the MAN folder
+     mab_folder_path = 'Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL-Specific-Rewards/MAB' # store the results folder unber the MAN folder
      results_folder_path = os.path.join(mab_folder_path, 'Results') # results folder stores results of different experiments
      experiment_results_folder = datetime.now().strftime("%Y-%m-%d_%H-%M") # create a results folder for each experiment
      experiment_results_folder_path = os.path.join(results_folder_path,experiment_results_folder)
@@ -267,3 +215,138 @@ def result_file():
      result_file_path = os.path.join(experiment_results_folder_path, result_file)
      return experiment_results_folder_path, result_file_path
     
+
+def plot(result_folder_path):
+    '''Max PDR & Min PDR'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.MaxPDR, label='MaxPDR', color='blue')
+    plt.plot(x, MAB_Config.MinPDR, label='MinPDR', color='red')
+
+    plt.title('Max PDR and Min PDR changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('PDR')
+    plt.legend()
+
+    fig1_name = 'MaxMinPDR_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig1_name))
+
+    '''Min Energy Efficiency'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.MinEnergyEfficiency, label='MinEnergyEfficiency', color='blue')
+
+    plt.title('Minimum Energy Efficiency changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Energy Efficiency/(bits/mJ)')
+    plt.legend()
+
+    fig2_name = 'MinEnergyEfficiency_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig2_name))
+
+    '''Max Energy Efficiency'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.MaxEnergyEfficiency, label='MaxEnergyEfficiency', color='blue')
+
+    plt.title('Maximum Energy Efficiency changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Energy Efficiency/(bits/mJ)')
+    plt.legend()
+
+    fig3_name = 'MaxEnergyEfficiency_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig3_name))
+
+    '''Network Energy Efficiency'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.NetworkEnergyEfficiency, label='NetworkEnergyEfficiency', color='blue')
+
+    plt.title('Network Energy Efficiency changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Energy Efficiency/(bits/mJ)')
+    plt.legend()
+
+    fig4_name = 'NetworkEnergyEfficiency_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig4_name))
+
+    '''Jain's Faireness Index'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.JainFairness, label='Jain Faireness Index', color='blue')
+
+    plt.title('Jains Faireness Index changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Jains Faireness Index')
+    plt.legend()
+
+    fig5_name = 'JainsFairenessIndex_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig5_name))
+
+    '''Average cumulative reward'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.average_cumulative_reward_SF, '-', color='b')
+
+    plt.title('Average cumulative reward of SF changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Average Cumulative Reward')
+
+    fig6_name = 'Average_Cumulative_Reward_SF_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig6_name))
+
+    '''Average cumulative reward of BW'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.average_cumulative_reward_BW, '-', color='b')
+
+    plt.title('Average cumulative reward of BW changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Average Cumulative Reward')
+
+    fig7_name = 'Average_Cumulative_Reward_BW_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig7_name))
+
+    '''Average cumulative reward of Fre'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.average_cumulative_reward_Fre, '-', color='b')
+
+    plt.title('Average cumulative reward of Fre changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Average Cumulative Reward')
+
+    fig8_name = 'average_cumulative_reward_Fre.png'
+    plt.savefig(os.path.join(result_folder_path, fig8_name))
+
+    '''Average cumulative reward of TP'''
+    plt.figure()
+    x = range(1,MAB_Config.num_episode+1)
+    plt.plot(x, MAB_Config.average_cumulative_reward_TP, '-', color='b')
+
+    plt.title('Average cumulative reward of TP changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Average Cumulative Reward')
+
+    fig9_name = 'average_cumulative_reward_TP.png'
+    plt.savefig(os.path.join(result_folder_path, fig9_name))   
+
+    '''Network PDR'''
+    plt.figure()
+    plt.plot(x, MAB_Config.Network_PDR, '-', color='b')
+    plt.title('Network PDR changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Network PDR')
+
+    fig10_name = 'Network_PDR_plot.png'
+    plt.savefig(os.path.join(result_folder_path, fig10_name))
+
+    '''Network Throughput'''
+    plt.figure()
+    plt.plot(x, MAB_Config.Network_Throughput, '-', color='b')
+    plt.title('Network throughput changes with increasing episode')
+    plt.xlabel('Episode')
+    plt.ylabel('Network Throughput')
+
+    fig11_name = 'Network_Throughput.png'
+    plt.savefig(os.path.join(result_folder_path, fig11_name))

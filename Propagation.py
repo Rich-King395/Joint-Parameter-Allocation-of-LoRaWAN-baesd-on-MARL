@@ -69,11 +69,12 @@ def powerCollision(p1, p2):
         # packets are too close to each other, both collide
         # return both packets as casualties 
         return (p1, p2)
-    elif p2.RSSI - p1.RSSI > powerThreshold:
+    elif p2.RSSI - p1.RSSI > powerThreshold or p2.RSSI - p1.RSSI == powerThreshold:
         # p2 overpowered p1, return p1 as casualty
         return (p1,)
     # p2 was the weaker packet, return it as a casualty  
-    return (p2,)
+    elif p1.RSSI - p2.RSSI > powerThreshold or p1.RSSI - p2.RSSI == powerThreshold:
+        return (p2,)
 
 def timingCollision(p1, p2):
     # assuming p1 is the freshly arrived packet and this is the last check
@@ -118,7 +119,7 @@ def snr(packet):
     SNR_dB = 10 * math.log10(SNR_linear)
     # print("SNR: ",SNR_dB)
     return SNR_dB
-
+    
 def checklost(packet,distance):
     packet.RSSI = rssi(packet.tp,distance)
     packet.SNR = snr(packet)

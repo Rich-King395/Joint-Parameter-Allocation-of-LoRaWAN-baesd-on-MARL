@@ -23,9 +23,13 @@ class MAB:
         self.counts_TP = np.zeros(self.K_TP)
 
         # reward for each step
-        self.reward = 0
-        # cumulative reward for each agent
-        self.cumulative_reward = 0
+        self.rewards = [0,0,0,0]
+        
+        # cumulative rewards of each LoRa resource of each agent
+        self.cumulative_reward_SF = 0
+        self.cumulative_reward_BW = 0
+        self.cumulative_reward_Fre = 0
+        self.cumulative_reward_TP = 0
 
         self.action = []
         # record the action chosen by the agent for each step
@@ -39,18 +43,14 @@ class MAB:
         # print("Update expected reward")
         # print("self.reward=",self.reward)
         # print("SF index",k_sf)
-        self.Q_SF[k_sf] += (self.reward - self.Q_SF[k_sf]) / (self.counts_SF[k_sf] + 1)
-        # print("self.reward - self.Q_SF[k_sf]=",self.reward - self.Q_SF[k_sf])
-        # print("self.counts_SF[k_sf] + 1=",self.counts_SF[k_sf] + 1)
-        # print("(self.reward - self.Q_SF[k_sf] / (self.counts_SF[k_sf] + 1)",((self.reward - self.Q_SF[k_sf]) / (self.counts_SF[k_sf] + 1)))
-        # print("self.Q_SF[k_sf]",self.Q_SF[k_sf])
-        self.Q_BW[k_bw] +=  (self.reward - self.Q_SF[k_bw]) / (self.counts_BW[k_bw] + 1)
-        self.Q_Fre[k_fre] += (self.reward - self.Q_Fre[k_fre]) / (self.counts_Fre[k_fre] + 1)
-        if self.reward == 1:
-            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
-        elif self.reward == -1:
-            self.reward = self.reward - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
-        self.Q_TP[k_tp] += (self.reward - self.Q_TP[k_tp]) / (self.counts_TP[k_tp] + 1)
+        self.Q_SF[k_sf] += (self.rewards[0] - self.Q_SF[k_sf]) / (self.counts_SF[k_sf] + 1)
+        self.Q_BW[k_bw] +=  (self.rewards[1] - self.Q_SF[k_bw]) / (self.counts_BW[k_bw] + 1)
+        self.Q_Fre[k_fre] += (self.rewards[2] - self.Q_Fre[k_fre]) / (self.counts_Fre[k_fre] + 1)
+        if self.rewards[3] == 1:
+            self.rewards[3] = self.rewards[3] - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
+        elif self.rewards[3] == -1:
+            self.rewards[3] = self.rewards[3] - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
+        self.Q_TP[k_tp] += (self.rewards[3] - self.Q_TP[k_tp]) / (self.counts_TP[k_tp] + 1)
 
 
 """ epsilon greedy algorithm, inherit from MAB """

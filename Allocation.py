@@ -8,8 +8,8 @@ def random_allocation():
     sf = random.randint(7,12)
     bw = random.choice([125,250,500])
     fre = random.choice(Carrier_Frequency)
-    tp = 14
-    # tp = random.choice(Transmission_Power)
+    # tp = 14
+    tp = random.choice(Transmission_Power)
     return sf,bw,fre,tp
 
 #choose the closest SF and bw config according to distance between node and gateway and receive sensitivity
@@ -33,7 +33,9 @@ def round_robin_allocation(id):
     fre_index = nodeid % 8
     fre = Carrier_Frequency[fre_index]
     bw = random.choice([125,250,500])
-    return sf,bw,fre
+    tp = random.choice(Transmission_Power)
+    # tp = 14
+    return sf,bw,fre,tp
     # nodeid = id
     # nodeid = nodeid % 6
     # sf = SF[nodeid]
@@ -83,6 +85,30 @@ def ADR(PacketPara,last_packet_rssi,ADR_flag,id):
             if tp > 14:
                 tp = 14
     fre = random.choice(Carrier_Frequency)
+    return sf,bw,fre,tp
+
+
+SF_SUM = float(7/(2^7)+8/(2^8)+9/(2^9)+10/(2^10)+11/(2^11)+12/(2^12))
+probabilities = [float((7/(2^7))/(SF_SUM)), float((8/(2^8))/(SF_SUM)),float((9/(2^9))/(SF_SUM)),float((10/(2^10))/(SF_SUM)),float((11/(2^11))/(SF_SUM)),float((12/(2^12))/(SF_SUM))]
+
+def RS_LoRa(distance):
+    bw = random.choice([125,250,500])
+    fre = random.choice(Carrier_Frequency)
+    sf = np.random.choice(SF, p=probabilities)
+
+    RS = myPacket.GetReceiveSensitivity(sf,bw) # Receiver sensitivity of this sf+bw config
+
+    '''find the minimum TP that satisfies the receiver sensitivity'''
+    Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std) # estimated path loss of the packet
+    TP_margin_list = []
+    for TP in Transmission_Power:
+        if TP - Lpl - RS > 0:
+            TP_margin_list.append(TP - Lpl - RS)
+        else:
+            TP_margin_list.append(1000)
+    min_index = np.argmin(TP_margin_list)
+    tp = Transmission_Power[min_index]  
+
     return sf,bw,fre,tp
 
 

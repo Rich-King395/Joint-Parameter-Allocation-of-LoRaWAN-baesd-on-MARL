@@ -1,0 +1,13 @@
+episode=0, mum of sent packets=4615, num of lost packets=powerloss:972+collided:597=1569, MinEnergyEfficiency=1.49, MaxEnergyEfficiency=15.11, Jain's Fairness Index=0.74, PDR=65.94
+episode=1, mum of sent packets=4657, num of lost packets=powerloss:684+collided:506=1190, MinEnergyEfficiency=1.03, MaxEnergyEfficiency=22.06, Jain's Fairness Index=0.69, PDR=74.30
+episode=2, mum of sent packets=4620, num of lost packets=powerloss:609+collided:532=1141, MinEnergyEfficiency=1.00, MaxEnergyEfficiency=20.64, Jain's Fairness Index=0.67, PDR=75.22
+episode=3, mum of sent packets=4604, num of lost packets=powerloss:568+collided:498=1066, MinEnergyEfficiency=1.19, MaxEnergyEfficiency=16.26, Jain's Fairness Index=0.68, PDR=76.78
+episode=4, mum of sent packets=4720, num of lost packets=powerloss:562+collided:423=985, MinEnergyEfficiency=1.86, MaxEnergyEfficiency=48.45, Jain's Fairness Index=0.53, PDR=79.00
+episode=5, mum of sent packets=4660, num of lost packets=powerloss:566+collided:506=1072, MinEnergyEfficiency=0.98, MaxEnergyEfficiency=20.08, Jain's Fairness Index=0.65, PDR=76.95
+episode=6, mum of sent packets=4649, num of lost packets=powerloss:505+collided:450=955, MinEnergyEfficiency=1.27, MaxEnergyEfficiency=15.84, Jain's Fairness Index=0.72, PDR=79.39
+episode=7, mum of sent packets=4646, num of lost packets=powerloss:467+collided:401=868, MinEnergyEfficiency=1.08, MaxEnergyEfficiency=26.71, Jain's Fairness Index=0.65, PDR=81.25
+episode=8, mum of sent packets=4508, num of lost packets=powerloss:460+collided:384=844, MinEnergyEfficiency=0.87, MaxEnergyEfficiency=29.00, Jain's Fairness Index=0.57, PDR=81.12
+episode=9, mum of sent packets=4631, num of lost packets=powerloss:500+collided:453=953, MinEnergyEfficiency=0.77, MaxEnergyEfficiency=26.37, Jain's Fairness Index=0.64, PDR=79.29
+episode=10, mum of sent packets=4645, num of lost packets=powerloss:436+collided:449=885, MinEnergyEfficiency=0.87, MaxEnergyEfficiency=33.99, Jain's Fairness Index=0.55, PDR=80.84
+episode=11, mum of sent packets=4552, num of lost packets=powerloss:413+collided:412=825, MinEnergyEfficiency=0.90, MaxEnergyEfficiency=82.09, Jain's Fairness Index=0.33, PDR=81.83
+episode=12, mum of sent packets=4508, num of lost packets=powerloss:402+collided:382=784, MinEnergyEfficiency=0.82, MaxEnergyEfficiency=48.80, Jain's Fairness Index=0.50, PDR=82.56

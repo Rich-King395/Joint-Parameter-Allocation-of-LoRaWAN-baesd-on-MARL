@@ -18,6 +18,7 @@ class myNode:
         self.x = x
         self.y = y
 
+        
         self.last_packet_rssi = 0 # the RSSI of the last packet sent by the node
         self.ADR_flag = 0 # the ADR flag of the node
         self.Generate_Packet_Flag = 0
@@ -77,7 +78,9 @@ class myNode:
             elif allocation_method == "ADR":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
             elif allocation_method == "Round Robin":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre = round_robin_allocation(self.id)
+                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = round_robin_allocation(self.id)
+            elif allocation_method == "RS-LoRa":
+                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.dist[i])
             elif allocation_method == "MARL":                     
                  PacketPara.sf = SF[self.agent.action[0]]
             elif allocation_method == "MAB":
@@ -250,43 +253,27 @@ def transmit(env,node):
 
         if allocation_method == "MAB":
             for bs in range(0, nrBS):
-                if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
-                    node.agent.reward = -1 # packet loss, negative reward
+                # if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
+                #     if node.id == 0:
+                #         print("Packet lost or collided")
+                if node.packet[bs].lost == True:
+                    # node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
+                    node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
+                elif node.packet[bs].collided == 1:
+                    # node.agent.rewards = [-1,-0.5,-0.5,0] # packet collided, negative reward
+                    node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
                 else:
-                    node.agent.reward = 1 # successully received, positive reward
+                    node.agent.rewards = [1,1,1,1] # successully received, positive reward
             # print(node.id)
             # print(node.agent.reward)
-            node.agent.cumulative_reward += node.agent.reward
+            node.agent.cumulative_reward_SF += node.agent.rewards[0]
+            node.agent.cumulative_reward_BW += node.agent.rewards[1]
+            node.agent.cumulative_reward_Fre += node.agent.rewards[2]
+            node.agent.cumulative_reward_TP += node.agent.rewards[3]
             node.agent.Expected_Reward_Update(node.sf_index, node.bw_index, node.fre_index, node.tp_index)
 
             # if node.id == 0:
             #     print("Transmission Power",ParameterConfig.Transmission_Power[node.tp_index])
-
-        # if allocation_method == "MAB":
-        #     for bs in range(0, nrBS):
-        #         if node.packet[bs].lost == "True":
-        #             #node.agent.rewards = [-1,-1,-1]
-        #             node.agent.rewards = [0,0,-1] # packet lost, negative reward
-        #         elif node.packet[bs].collided == 1: 
-        #             #node.agent.rewards = [-1,-1,-1]
-        #             node.agent.rewards = [-1,-1,0] # packet collided, negative reward
-        #         else:
-        #             #tp_reward = 5-(5*(float(Transmission_Power[node.tp_index]-8)/10))
-        #             tp_reward = 5
-        #             #node.agent.rewards = [1,1,1] 
-        #             node.agent.rewards = [5,5,tp_reward] # successully received, positive reward
-        #     # print("node id:",node.id)
-        #     # print(node.agent.reward)
-        #     node.agent.cumulative_reward_SF_BW += node.agent.rewards[0]
-        #     node.agent.cumulative_reward_Fre += node.agent.rewards[1]
-        #     node.agent.cumulative_reward_TP += node.agent.rewards[2]
-
-        #     node.agent.Expected_Reward_Update(node.sf_bw_index, node.fre_index, node.tp_index)
-
-            # if node.id == 0:
-            #     print("Q_SF_BW",node.agent.Q_SF_BW)
-            #     print("Q_Fre",node.agent.Q_Fre)
-            #     print("Q_TP",node.agent.Q_TP)
 
         
         if allocation_method == "Q-table":

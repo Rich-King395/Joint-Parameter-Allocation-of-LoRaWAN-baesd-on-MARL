@@ -1,0 +1,29 @@
+Simulation start at 2024-09-03 21:54:27.286749 and end at 2024-09-03 21:54:27.647717
+--------Parameter Setting--------
+Nodes per base station: 50
+Packet generation interval: 4000 ms
+LoRa parameters allocation type: Local
+LoRa parameters allocation method: Random
+Simulation duration: 0 h
+Number of gateways: 1
+Collision check mode: Full Collision Check
+Antenna type: Directional antenna
+Number of networks: 1
+Network topology radius: 2000 m
+Packet payload size: 20
+
+--------Simulation Results--------
+Total number of packets sent: 11305
+Number of received packets: 128
+Number of collided packets: 10992
+Number of lost packets: 173
+Total payload size: 226100 bytes
+Received payload size: 2560 bytes
+Total transmission energy consumption: 374529.807 Joule
+Network throughput: 1.374 bps
+Network PDR(Packet Delivery Rate): 1.13 %
+Minimum PDR: 0.00 %
+Maximum PDR: 12.50 %
+Network Energy efficiency: 0.007 bits/mJ
+Minimum Energy efficiency: 0.000 bits/mJ
+Jain's fairness index: 0.201

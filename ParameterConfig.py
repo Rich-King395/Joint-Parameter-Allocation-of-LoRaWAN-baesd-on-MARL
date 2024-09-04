@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import random
 # turn on/off graphics
-graphics = 1
+graphics = 0
 
 # store the results or not
 storage_flag = 1
@@ -53,6 +53,7 @@ dis_range = np.array([sf7_dis,sf8_dis,sf9_dis,sf10_dis,sf11_dis,sf12_dis])
 SNR_Req = np.array([-7.5,-10,-12.5,-15,-17.5,-20])
 Bandwidth = np.array([125,250,500])
 SF = np.array([7,8,9,10,11,12])
+
 Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
 Transmission_Power = np.array([2,4,6,8,10,12,14])
 SF_BW = [[7,125],[7,250],[7,500],
@@ -63,15 +64,15 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 150
+nrNodes = 50
 nrBS = 1
-radius = 1500
+radius = 1000
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
 # allocation_method = "ADR"
+# allocation_method = "random"
 allocation_method = "Round Robin"
-# allocation_method = "Round Robin"
 nrNetworks = 1
 simtime = 1200000
 directionality = 1
@@ -168,7 +169,7 @@ class MAB_Config:
     epsilon = 0.05
     decay_epsilon = 0.75
     random_seed = 2
-    num_episode = 4000
+    num_episode = 10000
 
     average_cumulative_reward = []
 
@@ -178,11 +179,12 @@ class MAB_Config:
     average_cumulative_reward_TP = []
 
     Network_PDR = [] # Network PDRs of all episodes
-
+    Network_Throughput = [] # Network Throughputs of all episodes
     MinPDR = [] # Minimum PDR of all nodes in each episode
     MaxPDR = [] # Maximum PDR of all nodes in each episode
     MinEnergyEfficiency = [] # Minimum energy efficiency of all nodes in each episode
     MaxEnergyEfficiency = [] # Maximum energy efficiency of all nodes in each episode
+    NetworkEnergyEfficiency = [] # Network energy efficiency of all nodes in each episode
     
     JainFairness = [] # Jain fairness of all nodes in each episode
 
@@ -206,3 +208,4 @@ def Jain_Fairness_Index(nodes):
     Suqare_of_Sum = Suqare_of_Sum ** 2
     Jain_Fairness = float(Suqare_of_Sum) / float(Sum_of_Square)
     return Jain_Fairness
+
