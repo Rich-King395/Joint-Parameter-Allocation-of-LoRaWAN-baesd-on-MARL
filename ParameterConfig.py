@@ -64,15 +64,17 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 50
+nrNodes = 200
 nrBS = 1
-radius = 1000
+radius = 1500
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
 # allocation_method = "ADR"
-# allocation_method = "random"
-allocation_method = "Round Robin"
+allocation_method = "random"
+# allocation_method = "Round Robin"
+# allocation_method = "RS-LoRa"
+# allocation_method = "MAB"
 nrNetworks = 1
 simtime = 1200000
 directionality = 1
@@ -169,7 +171,7 @@ class MAB_Config:
     epsilon = 0.05
     decay_epsilon = 0.75
     random_seed = 2
-    num_episode = 10000
+    num_episode = 5000
 
     average_cumulative_reward = []
 

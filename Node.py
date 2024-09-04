@@ -257,11 +257,11 @@ def transmit(env,node):
                 #     if node.id == 0:
                 #         print("Packet lost or collided")
                 if node.packet[bs].lost == True:
-                    # node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
-                    node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
+                    node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
+                    # node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
                 elif node.packet[bs].collided == 1:
-                    # node.agent.rewards = [-1,-0.5,-0.5,0] # packet collided, negative reward
-                    node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
+                    node.agent.rewards = [-1,-0.5,-0.5,0] # packet collided, negative reward
+                    # node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
                 else:
                     node.agent.rewards = [1,1,1,1] # successully received, positive reward
             # print(node.id)

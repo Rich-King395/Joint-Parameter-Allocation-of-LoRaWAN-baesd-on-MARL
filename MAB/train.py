@@ -67,6 +67,8 @@ def MAB_train(nodes):
             set_seed(random_seed) # reinitialize the random seed
             env.run(until=ParameterConfig.simtime)
         else:
+            if episode == 0:
+                set_seed(random_seed)
             # set_seed(random_seed) # reinitialize the random seed
             env.run(until=ParameterConfig.traininterveltime)
 
@@ -203,7 +205,7 @@ def MAB_train(nodes):
         plot(result_folder_path)
 
 def result_file():
-     mab_folder_path = 'Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL-Specific-Rewards/MAB' # store the results folder unber the MAN folder
+     mab_folder_path = 'Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/MAB' # store the results folder unber the MAN folder
      results_folder_path = os.path.join(mab_folder_path, 'Results') # results folder stores results of different experiments
      experiment_results_folder = datetime.now().strftime("%Y-%m-%d_%H-%M") # create a results folder for each experiment
      experiment_results_folder_path = os.path.join(results_folder_path,experiment_results_folder)
