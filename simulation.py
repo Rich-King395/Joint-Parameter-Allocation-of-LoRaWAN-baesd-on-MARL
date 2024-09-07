@@ -55,12 +55,12 @@ class Simulation:
                 # when we add directionality, we update the RSSI here
                 if (directionality == 1):
                     node.updateRSSI()
-                if allocation_method not in ["MARL", "MAB", "Q-table"]:
+                if allocation_method not in ["MARL", "DALoRa", "Q-table"]:
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
             id += 1
         
-        if allocation_method=="MAB":
+        if allocation_method=="DALoRa":
             set_seed(random_seed)
             MAB_train(nodes)
         else:

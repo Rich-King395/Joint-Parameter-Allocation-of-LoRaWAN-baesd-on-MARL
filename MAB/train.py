@@ -122,14 +122,14 @@ def MAB_train(nodes):
             MAB_Config.average_cumulative_reward_Fre.append(total_cumulative_reward_Fre/len(nodes))
             MAB_Config.average_cumulative_reward_TP.append(total_cumulative_reward_TP/len(nodes))
 
-            MAB_Config.MinPDR.append(NetThroughput)
-            MAB_Config.Network_Throughput.append(max(ParameterConfig.PDRPerNode))
+            MAB_Config.MinPDR.append(min(ParameterConfig.PDRPerNode))
             MAB_Config.MaxPDR.append(max(ParameterConfig.PDRPerNode))
             MAB_Config.MinEnergyEfficiency.append(min(ParameterConfig.EnergyEfficiencyPerNode))
             MAB_Config.MaxEnergyEfficiency.append(max(ParameterConfig.EnergyEfficiencyPerNode))
             MAB_Config.NetworkEnergyEfficiency.append(NetEnergyEfficiency)
             MAB_Config.JainFairness.append(Jain_Fairness_Index(nodes))
             MAB_Config.Network_PDR.append(pdr)
+            MAB_Config.Network_Throughput.append(NetThroughput)
 
         end_sim_time = time.time()
         sim_time_per_episode = end_sim_time - start_sim_time 
@@ -143,7 +143,9 @@ def MAB_train(nodes):
                 #         file.write(f"node id={node.id}, Q_SF = {node.agent.Q_SF}, Q_BW = {node.agent.Q_BW}, Q_Fre = {node.agent.Q_Fre}\n")          
             
         # print(f"episode={episode}, mum of sent packets={sumSent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}")
-        print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={JainFairness:.2f}, PDR={pdr:.2f}")
+        # print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={JainFairness:.2f}, PDR={pdr:.2f}")
+        print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, Network Throughput={NetThroughput:.2f}, Network EE={NetEnergyEfficiency:.2f}, PDR={pdr:.2f}")
+
 
         if episode == MAB_Config.num_episode:
             if ParameterConfig.storage_flag == 1:

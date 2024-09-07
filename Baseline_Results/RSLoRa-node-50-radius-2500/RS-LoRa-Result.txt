@@ -1,4 +1,4 @@
-Simulation start at 2024-09-04 16:40:45.824607 and end at 2024-09-04 16:40:46.975378
+Simulation start at 2024-09-05 17:24:09.323013 and end at 2024-09-05 17:24:10.541795
 --------Parameter Setting--------
 Nodes per base station: 50
 Packet generation interval: 4000 ms
@@ -14,16 +14,16 @@ Packet payload size: 20
 
 --------Simulation Results--------
 Total number of packets sent: 14266
-Number of received packets: 5607
-Number of collided packets: 705
-Number of lost packets: 7951
+Number of received packets: 6480
+Number of collided packets: 860
+Number of lost packets: 6923
 Total payload size: 285320 bytes
-Received payload size: 112140 bytes
-Total transmission energy consumption: 15498.203 Joule
-Network throughput: 246.965 bps
-Network PDR(Packet Delivery Rate): 39.30 %
-Minimum PDR: 20.00 %
-Maximum PDR: 77.56 %
-Network Energy efficiency: 7.236 bits/mJ
-Minimum Energy efficiency: 2.612 bits/mJ
-Jain's fairness index: 0.610
+Received payload size: 129600 bytes
+Total transmission energy consumption: 24562.997 Joule
+Network throughput: 285.417 bps
+Network PDR(Packet Delivery Rate): 45.42 %
+Minimum PDR: 24.92 %
+Maximum PDR: 81.89 %
+Network Energy efficiency: 5.276 bits/mJ
+Minimum Energy efficiency: 2.001 bits/mJ
+Jain's fairness index: 0.645

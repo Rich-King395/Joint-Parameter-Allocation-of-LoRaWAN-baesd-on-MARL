@@ -2,7 +2,7 @@
 Nodes per base station: 50
 Packet generation interval: 4000 ms
 LoRa parameters allocation type: Local
-LoRa parameters allocation method: MAB
+LoRa parameters allocation method: DALoRa
 Simulation duration: 0.33 h
 Number of gateways: 1
 Collision check mode: Full Collision Check
@@ -17,18 +17,18 @@ Alpha: 2
 Number of training episodes: 5000
 
 --------Simulation Results--------
-Total number of packets sent: 13816
-Number of received packets: 11621
-Number of collided packets: 1022
-Number of lost packets: 1170
-Total payload size: 276320 bytes
-Received payload size: 232420 bytes
-Total transmission energy consumption: 103546.319 Joule
-Network PDR(Packet Delivery Rate): 84.11 %
-Network throughput: 392.637 bps
-Network Energy efficiency: 2.245 bits/mJ
-Minimum PDR: 67.61 %
-Maximum PDR: 99.61 %
-Network Energy efficiency: 2.245 bits/mJ
-Minimum Energy efficiency: 0.569 bits/mJ
-Jain's fairness index: 0.250
+Total number of packets sent: 13960
+Number of received packets: 11979
+Number of collided packets: 668
+Number of lost packets: 1310
+Total payload size: 279200 bytes
+Received payload size: 239580 bytes
+Total transmission energy consumption: 91048.665 Joule
+Network PDR(Packet Delivery Rate): 85.81 %
+Network throughput: 461.912 bps
+Network Energy efficiency: 2.631 bits/mJ
+Minimum PDR: 68.73 %
+Maximum PDR: 96.97 %
+Network Energy efficiency: 2.631 bits/mJ
+Minimum Energy efficiency: 0.585 bits/mJ
+Jain's fairness index: 0.390

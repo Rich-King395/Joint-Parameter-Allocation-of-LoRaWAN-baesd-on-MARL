@@ -23,7 +23,7 @@ class myNode:
         self.ADR_flag = 0 # the ADR flag of the node
         self.Generate_Packet_Flag = 0
 
-        if allocation_method == "MAB":
+        if allocation_method == "DALoRa":
             if MAB_Config.MAB_Variant == 0:
                 self.agent = EpsilonGreedy()
             elif MAB_Config.MAB_Variant == 1:
@@ -83,7 +83,7 @@ class myNode:
                  PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.dist[i])
             elif allocation_method == "MARL":                     
                  PacketPara.sf = SF[self.agent.action[0]]
-            elif allocation_method == "MAB":
+            elif allocation_method == "DALoRa":
                  self.sf_index,self.bw_index,self.fre_index,self.tp_index = self.agent.actions_choose()
                  PacketPara.sf = SF[self.sf_index]
                  PacketPara.bw = Bandwidth[self.bw_index]
@@ -251,7 +251,7 @@ def transmit(env,node):
             # print("num of total received packets",len(ParameterConfig.recPackets))
         
 
-        if allocation_method == "MAB":
+        if allocation_method == "DALoRa":
             for bs in range(0, nrBS):
                 # if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
                 #     if node.id == 0:

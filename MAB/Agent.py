@@ -43,13 +43,17 @@ class MAB:
         # print("Update expected reward")
         # print("self.reward=",self.reward)
         # print("SF index",k_sf)
+
+        self.rewards[0] == self.rewards[0] + float((SF[k_sf]/(2^SF[k_sf]))/SF_SUM)
         self.Q_SF[k_sf] += (self.rewards[0] - self.Q_SF[k_sf]) / (self.counts_SF[k_sf] + 1)
+        
+        self.rewards[1] == self.rewards[1] - float((Bandwidth[k_bw])/BW_SUM)
         self.Q_BW[k_bw] +=  (self.rewards[1] - self.Q_SF[k_bw]) / (self.counts_BW[k_bw] + 1)
+
         self.Q_Fre[k_fre] += (self.rewards[2] - self.Q_Fre[k_fre]) / (self.counts_Fre[k_fre] + 1)
-        if self.rewards[3] == 1:
-            self.rewards[3] = self.rewards[3] - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
-        elif self.rewards[3] == -1:
-            self.rewards[3] = self.rewards[3] - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
+    
+        self.rewards[3] = self.rewards[3] - float((ParameterConfig.Transmission_Power[k_tp]-8)/25)
+        # self.rewards[3] = self.rewards[3] - float(ParameterConfig.Transmission_Power[k_tp]/TP_SUM)*1.8
         self.Q_TP[k_tp] += (self.rewards[3] - self.Q_TP[k_tp]) / (self.counts_TP[k_tp] + 1)
 
 

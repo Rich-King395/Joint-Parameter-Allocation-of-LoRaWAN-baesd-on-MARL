@@ -35,6 +35,8 @@ sf10 = np.array([10,-132,-128,-125])
 sf11 = np.array([11,-133,-130,-133])
 sf12 = np.array([12,-136,-133,-130])
 
+SF_SUM = float(7/(2^7)+8/(2^8)+9/(2^9)+10/(2^10)+11/(2^11)+12/(2^12))
+
 # receiver sensitivities of different SF and Bandwidth combinations
 sensi = np.array([sf7,sf8,sf9,sf10,sf11,sf12])
 
@@ -54,6 +56,9 @@ SNR_Req = np.array([-7.5,-10,-12.5,-15,-17.5,-20])
 Bandwidth = np.array([125,250,500])
 SF = np.array([7,8,9,10,11,12])
 
+BW_SUM = 125 + 250 + 500
+TP_SUM = 2 + 4 + 6 + 8 + 10 + 12 + 14
+
 Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
 Transmission_Power = np.array([2,4,6,8,10,12,14])
 SF_BW = [[7,125],[7,250],[7,500],
@@ -64,17 +69,17 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 200
+nrNodes = 50
 nrBS = 1
-radius = 1500
+radius = 3000
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
-# allocation_method = "ADR"
-allocation_method = "random"
-# allocation_method = "Round Robin"
-# allocation_method = "RS-LoRa"
-# allocation_method = "MAB"
+#allocation_method = "ADR"
+#allocation_method = "random"
+#allocation_method = "Round Robin"
+#allocation_method = "RS-LoRa"
+allocation_method = "DALoRa"
 nrNetworks = 1
 simtime = 1200000
 directionality = 1

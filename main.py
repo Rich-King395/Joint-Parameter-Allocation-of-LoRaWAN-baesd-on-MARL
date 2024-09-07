@@ -36,7 +36,7 @@ if __name__ == "__main__":
     simulation.simstarttime = datetime.now()
     simulation.run()
     simulation.simendtime = datetime.now()
-    if allocation_method != "MARL" and allocation_method != "MAB":
+    if allocation_method != "MARL" and allocation_method != "DALoRa":
         simulation.results_calculation()
         simulation.results_show()
         simulation.simulation_record()

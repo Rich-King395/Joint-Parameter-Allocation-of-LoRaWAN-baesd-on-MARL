@@ -73,22 +73,21 @@ def ADR(PacketPara,last_packet_rssi,ADR_flag,id):
             # find the indexes for the minimum positive margin
             min_positive_index, min_positive_margin = min(positive_indexes_margins, key=lambda x: x[1])
             # corresponding sf+bw config of the minimum positive margin
-            sf = sf_bw_margins[min_positive_index][0]
-            bw = sf_bw_margins[min_positive_index][1]
+            sf = sf_bw_margins[min_positive_index+1][0]
+            bw = sf_bw_margins[min_positive_index+1][1]
             tp = PacketPara.tp - 2*(min_positive_margin//2)
+            # tp = PacketPara.tp - (min_positive_margin//2)
             if tp < 2:
                 tp = 2
         else:
             sf = PacketPara.sf
             bw = PacketPara.bw
-            tp = PacketPara.tp +2
+            tp = PacketPara.tp + 2
             if tp > 14:
                 tp = 14
     fre = random.choice(Carrier_Frequency)
     return sf,bw,fre,tp
 
-
-SF_SUM = float(7/(2^7)+8/(2^8)+9/(2^9)+10/(2^10)+11/(2^11)+12/(2^12))
 probabilities = [float((7/(2^7))/(SF_SUM)), float((8/(2^8))/(SF_SUM)),float((9/(2^9))/(SF_SUM)),float((10/(2^10))/(SF_SUM)),float((11/(2^11))/(SF_SUM)),float((12/(2^12))/(SF_SUM))]
 
 def RS_LoRa(distance):
@@ -107,7 +106,7 @@ def RS_LoRa(distance):
         else:
             TP_margin_list.append(1000)
     min_index = np.argmin(TP_margin_list)
-    tp = Transmission_Power[min_index]  
+    tp = Transmission_Power[min_index] + 3
 
     return sf,bw,fre,tp
 
