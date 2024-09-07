@@ -114,6 +114,8 @@ plt.ylabel('Network PDR (%)')
 plt.xticks(radius)
 plt.yticks(range(0, 101, 10))
 plt.ylim(0, 100)
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
@@ -122,7 +124,7 @@ figure_folder_path = "/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-Lo
 if not os.path.exists(figure_folder_path):
         os.makedirs(figure_folder_path)
 fig_name = 'TropologyRadius_NetworkPDR_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 '''Network EE'''
@@ -138,12 +140,14 @@ plt.ylabel('Network Energy Efficiency (bits/mJ)')
 plt.xticks(radius)
 plt.yticks(range(0, 16, 1))
 plt.ylim(0, 15) 
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkEE_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 '''Network Throughput'''
 plt.figure(figsize=(8, 6))  # 设置图形大小
@@ -158,12 +162,14 @@ plt.ylabel('Network Throughput (bps)')
 plt.xticks(radius)
 plt.yticks(range(0, 950, 100))
 plt.ylim(0, 900) 
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkThropughput_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 '''Network Performance'''
@@ -181,12 +187,14 @@ plt.ylabel('Network Performance Index')
 plt.xticks(radius)
 plt.yticks([round(num, 3) for num in list(np.arange(0, 1.1, 0.10))])
 plt.ylim(0, 1) 
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkPerformance_line_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 # '''Minimum Node PDR'''
@@ -228,11 +236,13 @@ plt.xticks(num_of_nodes)
 plt.yticks(range(0, 101, 10))
 plt.ylim(0, 100) 
 plt.legend()
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'NumberofNodes_NetworkPDR_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 '''Network EE'''
 plt.figure(figsize=(8, 6))  # 设置图形大小
@@ -247,11 +257,13 @@ plt.xticks(num_of_nodes)
 plt.yticks(range(0, 10, 1))
 plt.ylim(0, 9) 
 plt.legend()
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'NumberofNodes_NetworkEE_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 '''Network Throughput'''
@@ -267,11 +279,13 @@ plt.xticks(num_of_nodes)
 plt.yticks(range(0, 800, 100))
 plt.ylim(0, 750) 
 plt.legend()
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)    
 plt.show()
 
 fig_name = 'NumberofNodes_NetworkThroughput_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 '''Network Performance'''
@@ -291,12 +305,14 @@ plt.xticks(num_of_nodes)
 plt.yticks([round(num,3) for num in list(np.arange(0, 1.1, 0.1))])
 # plt.ylim(1.400, 2.700) 
 plt.ylim(0, 1) 
+plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
+plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'NumberofNodes_NetworkPerformance_line_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500)
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 # '''Minimum Node PDR'''
 # plt.figure(figsize=(10, 6))  # 设置图形大小
