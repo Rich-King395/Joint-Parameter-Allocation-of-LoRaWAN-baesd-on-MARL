@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import random
 # turn on/off graphics
-graphics = 0
+graphics = 1
 
 # store the results or not
 storage_flag = 1
@@ -69,9 +69,9 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 50
+nrNodes = 200
 nrBS = 1
-radius = 3000
+radius = 2000
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
@@ -122,7 +122,8 @@ lostPackets_interval = 0
 
 PDRPerNode = [] # PDRs of all nodes in each episode
 EnergyEfficiencyPerNode = [] # Energy efficiencies of all nodes in each episode
-
+ThroughputPerNode = [] # Throughputs of all nodes in each episode
+MaxThroughput = 0 # Maximum throughput among the nodes (bits/s)
 global_observation = []
 next_global_observation = []
 
@@ -176,7 +177,7 @@ class MAB_Config:
     epsilon = 0.05
     decay_epsilon = 0.75
     random_seed = 2
-    num_episode = 5000
+    num_episode = 4000
 
     average_cumulative_reward = []
 

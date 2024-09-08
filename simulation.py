@@ -1,5 +1,8 @@
 import random
 import os
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from matplotlib.cm import ScalarMappable
 from ParameterConfig import *
 import ParameterConfig
 from Gateway import myBS, graphics_gateway
@@ -81,20 +84,20 @@ class Simulation:
                     bfile.write('{x} {y} {id}\n'.format(**vars(basestation)))
 
         # prepare show
-        if (graphics == 1):
-            plt.figure(figsize=(6, 6))
-            ax = plt.gcf().gca()
-            for GW in bs:
-                graphics_gateway(GW,ax)
-            for node in nodes:
-                graphics_node(node,ax)
-            plt.xlim([-radius, radius])
-            plt.ylim([-radius, radius])
-            # plt.draw()
-            # plt.show()
-            if storage_flag == 1:  
-                fig_name = 'network_tropology.png'
-                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name))          
+        # if (graphics == 1):
+        #     plt.figure(figsize=(6, 6))
+        #     ax = plt.gcf().gca()
+        #     for GW in bs:
+        #         graphics_gateway(GW,ax)
+        #     for node in nodes:
+        #         graphics_node(node,ax)
+        #     plt.xlim([-radius, radius])
+        #     plt.ylim([-radius, radius])
+        #     # plt.draw()
+        #     # plt.show()
+        #     if storage_flag == 1:  
+        #         fig_name = 'network_tropology.png'
+        #         plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name))          
 
     def results_calculation(self):
         for i in range(0,nrBS):
@@ -107,9 +110,11 @@ class Simulation:
             self.sent[nodes[i].bs.id] = self.sent[nodes[i].bs.id] + nodes[i].sent
         for node in nodes:
             node.PDR = 100*((node.rec_interval)/float(node.sent_interval))
-            PDRPerNode.append(node.PDR)
             node.EnergyEfficiency = node.RecPacketSize / float(node.EnergyConsumption)
+            node.Throughput = 8 * float(node.RecPacketSize / node.TotalPacketAirtime)
+            PDRPerNode.append(node.PDR)
             EnergyEfficiencyPerNode.append(node.EnergyEfficiency)
+            ThroughputPerNode.append(node.Throughput)
             
         # der = []
         # data extraction rate = Packet Dilvery Rate PDR
@@ -121,9 +126,10 @@ class Simulation:
         self.avgDER = (self.sumder)/nrBS
         
         self.throughput = 8 * float(ParameterConfig.RecPacketSize) / ParameterConfig.TotalPacketAirtime
-        self.EnergyEfficiency =  ParameterConfig.RecPacketSize / float(ParameterConfig.TotalEnergyConsumption)
+        self.EnergyEfficiency =  8 * float(ParameterConfig.RecPacketSize) / float(ParameterConfig.TotalEnergyConsumption)
         # fairness measure metrics
         self.MinEnergyEfficiency = min(EnergyEfficiencyPerNode)
+        ParameterConfig.MaxThroughput = max(ThroughputPerNode)
         self.PDRMin = min(PDRPerNode)
         self.PDRMax = max(PDRPerNode)
         self.JainFairness = Jain_Fairness_Index(nodes)
@@ -166,6 +172,38 @@ class Simulation:
             input('Press Enter to continue ...')
     
     def simulation_record(self):
+        '''Heatmap'''
+         # prepare show
+        if (graphics == 1):
+            plt.figure(figsize=(6, 6))
+            ax = plt.gcf().gca()
+            for GW in bs:
+                graphics_gateway(GW,ax)
+            for node in nodes:
+                graphics_node(node,ax)
+
+            # 保证生成的图像是正方形
+            ax.set_aspect('equal')
+
+            plt.xlim([-radius, radius])
+            plt.ylim([-radius, radius])
+            
+            plt.tick_params(axis='x', direction='in')  
+            plt.tick_params(axis='y', direction='in')  
+            plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
+            # 创建虚拟 ScalarMappable 对象来生成颜色条
+            sm = ScalarMappable(cmap=cm.plasma)
+            sm.set_array([])  # 设置一个空数组，因为颜色映射实际上不需要数据
+
+            # 添加颜色条到图像
+            cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+            cbar.set_label('Normalized Throughput')  # 设置颜色条的标签
+
+            if storage_flag == 1:  
+                fig_name = 'network_tropology.png'
+                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800)   
+
+        '''Simulation Results'''
         with open(self.result_file, 'w') as file:
             file.write('Simulation start at {}'.format(self.simstarttime))
             file.write(' and end at {}\n'.format(self.simendtime))

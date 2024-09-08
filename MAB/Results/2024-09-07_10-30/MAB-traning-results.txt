@@ -1,5 +1,0 @@
-episode=0, mum of sent packets=23399, num of lost packets=powerloss:9970+collided:6485=16455, MinEnergyEfficiency=0.69, MaxEnergyEfficiency=11.45, Jain's Fairness Index=0.75, PDR=29.59
-episode=1, mum of sent packets=23220, num of lost packets=powerloss:9203+collided:6728=15931, MinEnergyEfficiency=0.43, MaxEnergyEfficiency=19.89, Jain's Fairness Index=0.62, PDR=31.29
-episode=2, mum of sent packets=23063, num of lost packets=powerloss:8517+collided:6966=15483, MinEnergyEfficiency=0.32, MaxEnergyEfficiency=20.23, Jain's Fairness Index=0.62, PDR=32.77
-episode=3, mum of sent packets=23075, num of lost packets=powerloss:8242+collided:6961=15203, MinEnergyEfficiency=0.37, MaxEnergyEfficiency=18.90, Jain's Fairness Index=0.63, PDR=34.05
-episode=4, mum of sent packets=23345, num of lost packets=powerloss:8125+collided:7057=15182, MinEnergyEfficiency=0.38, MaxEnergyEfficiency=19.47, Jain's Fairness Index=0.62, PDR=34.90

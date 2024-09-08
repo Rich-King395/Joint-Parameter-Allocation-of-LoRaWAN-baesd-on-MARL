@@ -2,6 +2,7 @@
 # this function creates a BS, base station
 #
 import matplotlib.pyplot as plt
+from matplotlib.patches import RegularPolygon
 from ParameterConfig import *
 import math
 class myBS:
@@ -55,7 +56,9 @@ def graphics_gateway(GW,ax):
     # XXX should be base station position
     # deaw different BSs according to their ids
     if (GW.id == 0):
-        ax.add_artist(plt.Circle((GW.x, GW.y), 10*(radius/1000), fill=True, color='red'))
+        triangle = RegularPolygon((GW.x, GW.y), numVertices=3, radius=20*(radius/1000), orientation=0, color='red', fill=True)
+        ax.add_patch(triangle)
+        # ax.add_artist(plt.Circle((GW.x, GW.y), 20*(radius/1000), fill=True, color='red'))
         # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='blue'))
     if (GW.id == 1):
         ax.add_artist(plt.Circle((GW.x, GW.y), 10*(radius/1000), fill=True, color='red'))

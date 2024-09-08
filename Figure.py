@@ -2,6 +2,41 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+def Net_Per_Index_Calculation(pdr_data, EE_data, Throughput_data):
+    alpha = 0.5
+    beta = 0.25
+    gamma = 0.25
+    weights = [alpha, beta, gamma]
+    keys = list(pdr_data.keys())
+    pdr_list = []
+    pdr_max_values=[]
+    EE_list = []
+    EE_max_values=[]
+    Throughput_list = []
+    Throughput_max_values=[]
+    pdr_exp = pdr_data
+    EE_exp = EE_data
+    Throughput_exp = Throughput_data
+    for i in range(len(pdr_data[keys[0]])):
+        pdr_list.append([pdr_data[key][i] for key in keys])
+        EE_list.append([EE_data[key][i] for key in keys])
+        Throughput_list.append([Throughput_data[key][i] for key in keys])
+        pdr_max_value = max(pdr_list[i])
+        pdr_max_values.append(pdr_max_value)
+        EE_max_value = max(EE_list[i])
+        EE_max_values.append(EE_max_value)
+        Throughput_max_value = max(Throughput_list[i])
+        Throughput_max_values.append(Throughput_max_value)
+        for key in keys:
+            pdr_exp[key][i] = float(pdr_data[key][i] / pdr_max_values[i])
+            EE_exp[key][i] = float(EE_data[key][i] / EE_max_values[i])
+            Throughput_exp[key][i] = float(Throughput_data[key][i] / Throughput_max_values[i])
+    Net_Per_Index = {}
+    for key in keys:
+        weighted_values = [sum(w * x for w, x in zip(weights, data)) for data in zip(pdr_exp[key], EE_exp[key], Throughput_exp[key])]
+        Net_Per_Index[key] = weighted_values
+    return Net_Per_Index
+
 radius_pdr_data = {
     'Random': [70.76, 59.89, 52.72, 48.59, 39.84],
     'Round-Robin': [75.11, 62.51, 55.19, 51.21, 40.83],
@@ -26,23 +61,24 @@ radius_Throughput_data = {
     'DALoRa': [573.615, 551.314, 490.888, 461.912, 304.005]
 }
 
-radius_NetPer_data = {
-    'Random': [1.698, 1.788, 1.84, 1.893, 2.041],
-    'Round-Robin': [1.884, 2.17, 2.038, 2.110, 2.223],
-    'ADR': [2.318, 2.244, 2.176, 2.360, 2.283],
-    'RSLoRa': [2.218, 2.124, 2.09, 2.082, 1.978],
-    'DALoRa': [2.422, 2.341, 2.279, 2.374, 2.220]
-}
+# radius_NetPer_data = {
+#     'Random': [1.698, 1.788, 1.84, 1.893, 2.041],
+#     'Round-Robin': [1.884, 2.17, 2.038, 2.110, 2.223],
+#     'ADR': [2.318, 2.244, 2.176, 2.360, 2.283],
+#     'RSLoRa': [2.218, 2.124, 2.09, 2.082, 1.978],
+#     'DALoRa': [2.422, 2.341, 2.279, 2.374, 2.220]
+# }
 
-for key in radius_NetPer_data:
-    radius_NetPer_data[key] = [float(x / 3) for x in radius_NetPer_data[key]]
+# for key in radius_NetPer_data:
+#     radius_NetPer_data[key] = [float(x / 3) for x in radius_NetPer_data[key]]
+
+
 # radius_minimum_pdr_data = {
 #     'Random': [71.48, 59.92, 54.20, 48.59],
 #     'Round-Robin': [67.45, 46.64, 34.90],
 #     'ADR': [54.46, 49.82, 54.46],
 #     'MAB': [67.42, 78.32, 73.88]
 # }
-
 
 num_pdr_data = {
     'Random': [59.89, 49.61, 39.42, 31.47, 24.97],
@@ -68,15 +104,17 @@ num_Throughput_data = {
     'DALoRa': [551.314, 539.236, 524.298, 415.546, 324.623]
 }
 
-num_NetPer_data = {
-    'Random': [1.750, 1.659, 1.50, 1.49, 1.548],
-    'Round-Robin': [1.922, 2.236, 1.78, 1.664, 1.777],
-    'ADR': [2.352, 2.395, 2.470, 2.576, 2.671],
-    'RSLoRa': [2.124, 2.000, 1.906, 1.884, 1.900],
-    'DALoRa': [2.341, 2.335, 2.579, 2.526, 2.590]
-}
-for key in num_NetPer_data:
-    num_NetPer_data[key] = [float(x / 3) for x in num_NetPer_data[key]]
+# num_NetPer_data = {
+#     'Random': [1.750, 1.659, 1.50, 1.49, 1.548],
+#     'Round-Robin': [1.922, 2.236, 1.78, 1.664, 1.777],
+#     'ADR': [2.352, 2.395, 2.470, 2.576, 2.671],
+#     'RSLoRa': [2.124, 2.000, 1.906, 1.884, 1.900],
+#     'DALoRa': [2.341, 2.335, 2.579, 2.526, 2.590]
+# }
+
+# for key in num_NetPer_data:
+#     num_NetPer_data[key] = [float(x / 3) for x in num_NetPer_data[key]]
+
 # num_minimum_pdr_data = {
 #     'Random': [59.92, 48.29, 33.47],
 #     'Round-Robin': [46.64, 26.67, 5.23],
@@ -173,6 +211,10 @@ plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='ti
 
 
 '''Network Performance'''
+radius_NetPer_data = Net_Per_Index_Calculation(radius_pdr_data, radius_NetEE_data, radius_Throughput_data)
+# print(radius_NetPer_data)
+
+
 labels = list(radius_NetPer_data.keys())
 data = list(radius_NetPer_data.values())
 
@@ -289,6 +331,9 @@ plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='ti
 
 
 '''Network Performance'''
+num_NetPer_data = Net_Per_Index_Calculation(num_pdr_data, num_NetEE_data, num_Throughput_data)
+# print(num_NetPer_data)
+
 labels = list(num_NetPer_data.keys())
 data = list(num_NetPer_data.values())
 
@@ -332,3 +377,6 @@ plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='ti
 
 # fig_name = 'NumberofNodes_MinimumPDR_bar_chart.png'
 # plt.savefig(os.path.join(figure_folder_path, fig_name))
+
+
+      

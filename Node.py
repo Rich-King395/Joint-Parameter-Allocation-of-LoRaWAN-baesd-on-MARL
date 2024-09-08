@@ -2,6 +2,7 @@
 # this function creates a node
 # generate a node in the network with a random space
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 from ParameterConfig import *
 import ParameterConfig
@@ -58,8 +59,10 @@ class myNode:
 
         self.PDR = 0 # packet delivery ratio of the node
         self.RecPacketSize = 0 # size of packets received by the node
+        self.TotalPacketAirtime = 0 # total airtime of packets sent by the node
         self.EnergyConsumption = 0 # energy consumption of the node
         self.EnergyEfficiency = 0 # energy efficiency of the node
+        self.Throughput = 0 # throughput of the node
 
         if allocation_type == "Global":
             myNode.Generate_Packet(self)
@@ -204,6 +207,7 @@ def transmit(env,node):
                 node.packet[bs].seqNr = packetSeq
                 # print("node.packet[bs].seqNr:",node.packet[bs].seqNr)
             node.EnergyConsumption += node.packet[bs].tx_energy
+            node.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)    
             
             ParameterConfig.TotalPacketSize += node.packet[bs].PS
             ParameterConfig.TotalEnergyConsumption += node.packet[bs].tx_energy
@@ -309,8 +313,9 @@ def transmit(env,node):
 
 '''Graphics for node'''
 def graphics_node(node,ax):
+    colors = cm.plasma(node.Throughput/ParameterConfig.MaxThroughput)
     if (node.bs.id == 0):
-            ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='blue'))
+            ax.add_artist(plt.Circle((node.x, node.y), 6*(radius/1000), fill=True, color=colors))
     if (node.bs.id == 1):
             ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='red'))
     if (node.bs.id == 2):

@@ -1,11 +1,15 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from matplotlib.cm import ScalarMappable
 import time
 from datetime import datetime
 from ParameterConfig import *
 import ParameterConfig
 from Node import transmit
+from Node import *
+from Gateway import *
 import random
 def MAB_train(nodes):
     # episode_reward_lst = []
@@ -33,6 +37,8 @@ def MAB_train(nodes):
             node.RecPacketSize = 0 # size of packets received by the node
             node.EnergyConsumption = 0 # energy consumption of the node
             node.EnergyEfficiency = 0 # energy efficiency of the node
+            node.TotalPacketAirtime = 0 # total packet airtime of the node
+            node.Throughput = 0 # throughput of the node
             # create a transmission process for each node
             env.process(transmit(env,node))
         
@@ -61,6 +67,7 @@ def MAB_train(nodes):
        
         ParameterConfig.PDRPerNode = []
         ParameterConfig.EnergyEfficiencyPerNode = []
+        ParameterConfig.ThroughputPerNode = []
 
         # interact with the environment
         if episode == MAB_Config.num_episode:
@@ -102,15 +109,18 @@ def MAB_train(nodes):
 
             node.PDR = 100*((node.rec_interval)/float(node.sent_interval))
             ParameterConfig.PDRPerNode.append(node.PDR)
-            node.EnergyEfficiency = node.RecPacketSize / float(node.EnergyConsumption)
+            node.EnergyEfficiency = float(8*node.RecPacketSize / node.EnergyConsumption)
             ParameterConfig.EnergyEfficiencyPerNode.append(node.EnergyEfficiency)
+            node.Throughput = 8 * float(node.RecPacketSize / node.TotalPacketAirtime)
+            ParameterConfig.ThroughputPerNode.append(node.Throughput)
         
 
         NetThroughput = 8 * float(ParameterConfig.RecPacketSize) / ParameterConfig.TotalPacketAirtime
+        ParameterConfig.MaxThroughput = max(ParameterConfig.ThroughputPerNode)
         MinEnergyEfficiency = min(ParameterConfig.EnergyEfficiencyPerNode)
         MaxEnergyEfficiency = max(ParameterConfig.EnergyEfficiencyPerNode)
         JainFairness = Jain_Fairness_Index(nodes)
-        NetEnergyEfficiency =  ParameterConfig.RecPacketSize / float(ParameterConfig.TotalEnergyConsumption)
+        NetEnergyEfficiency = float(8*ParameterConfig.RecPacketSize / ParameterConfig.TotalEnergyConsumption)
 
         num_rec = len(ParameterConfig.recPackets)
         num_lost = len(ParameterConfig.collidedPackets) + len(ParameterConfig.lostPackets)
@@ -148,6 +158,38 @@ def MAB_train(nodes):
 
 
         if episode == MAB_Config.num_episode:
+            '''Heatmap'''
+            # prepare show
+            if (graphics == 1):
+                plt.figure(figsize=(6, 6))
+                ax = plt.gcf().gca()
+                for GW in bs:
+                    graphics_gateway(GW,ax)
+                for node in nodes:
+                    graphics_node(node,ax)
+
+                # 保证生成的图像是正方形
+                ax.set_aspect('equal')
+
+                plt.xlim([-radius, radius])
+                plt.ylim([-radius, radius])
+                
+                plt.tick_params(axis='x', direction='in')  
+                plt.tick_params(axis='y', direction='in')  
+                plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
+                # 创建虚拟 ScalarMappable 对象来生成颜色条
+                sm = ScalarMappable(cmap=cm.plasma)
+                sm.set_array([])  # 设置一个空数组，因为颜色映射实际上不需要数据
+
+                # 添加颜色条到图像
+                cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+                cbar.set_label('Normalized Throughput')  # 设置颜色条的标签
+
+                if storage_flag == 1:  
+                    fig_name = 'network_tropology.png'
+                    plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800) 
+            
+            '''Test results'''  
             if ParameterConfig.storage_flag == 1:
                 config_file = "MAB-Result.txt" # txt results of each episode in training process
                 config_file_path = os.path.join(result_folder_path, config_file)
