@@ -69,9 +69,9 @@ SF_BW = [[7,125],[7,250],[7,500],
          [12,125],[12,250],[12,500]]
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 200
+nrNodes = 300
 nrBS = 1
-radius = 2000
+radius = 2500
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
@@ -194,7 +194,8 @@ class MAB_Config:
     MaxEnergyEfficiency = [] # Maximum energy efficiency of all nodes in each episode
     NetworkEnergyEfficiency = [] # Network energy efficiency of all nodes in each episode
     
-    JainFairness = [] # Jain fairness of all nodes in each episode
+    EEJainFairness = [] # Jain fairness of all nodes in each episode
+    ThroughputJainFairness = []
 
 class Q_table_Config:
     alpha = 0.1 # learning rate
@@ -206,7 +207,7 @@ class Q_table_Config:
     num_episode = 4000
     experience_replay = False
 
-def Jain_Fairness_Index(nodes):
+def EE_Jain_Fairness_Index(nodes):
     Suqare_of_Sum = 0
     Sum_of_Square = 0
     for node in nodes:
@@ -214,6 +215,33 @@ def Jain_Fairness_Index(nodes):
         Suqare_of_Sum += node.EnergyEfficiency
     Sum_of_Square = len(nodes) * (Sum_of_Square)
     Suqare_of_Sum = Suqare_of_Sum ** 2
-    Jain_Fairness = float(Suqare_of_Sum) / float(Sum_of_Square)
-    return Jain_Fairness
+    EE_Jain_Fairness = float(Suqare_of_Sum) / float(Sum_of_Square)
+    return EE_Jain_Fairness
 
+def Throughput_Jain_Fairness_Index(nodes):
+    Suqare_of_Sum = 0
+    Sum_of_Square = 0
+    for node in nodes:
+        Sum_of_Square += node.Throughput ** 2
+        Suqare_of_Sum += node.Throughput
+    Sum_of_Square = len(nodes) * (Sum_of_Square)
+    Suqare_of_Sum = Suqare_of_Sum ** 2
+    Throughput_Jain_Fairness = float(Suqare_of_Sum) / float(Sum_of_Square)
+    return Throughput_Jain_Fairness
+
+def Linear_Product_based_Fairness_Index(nodes):
+    L = 1
+    for node in nodes:
+        L = L * float(node.Throughput/MaxThroughput)
+    return L
+
+def Throughput_Variance(nodes):
+    sum = 0
+    for node in nodes:
+        sum += node.Throughput
+    mean = sum / len(nodes)
+    variance = 0
+    for node in nodes:
+        variance += (node.Throughput - mean) ** 2
+    variance = variance / len(nodes)
+    return variance

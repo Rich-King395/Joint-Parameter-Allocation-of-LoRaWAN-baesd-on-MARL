@@ -1,8 +1,8 @@
-import numpy as np
 import os
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.cm import ScalarMappable
+from matplotlib.lines import Line2D
 import time
 from datetime import datetime
 from ParameterConfig import *
@@ -119,7 +119,9 @@ def MAB_train(nodes):
         ParameterConfig.MaxThroughput = max(ParameterConfig.ThroughputPerNode)
         MinEnergyEfficiency = min(ParameterConfig.EnergyEfficiencyPerNode)
         MaxEnergyEfficiency = max(ParameterConfig.EnergyEfficiencyPerNode)
-        JainFairness = Jain_Fairness_Index(nodes)
+        EEJainFairness = EE_Jain_Fairness_Index(nodes)
+        ThroughputJainFairness = Throughput_Jain_Fairness_Index(nodes)
+        ThroughputVariance = Throughput_Variance(nodes)
         NetEnergyEfficiency = float(8*ParameterConfig.RecPacketSize / ParameterConfig.TotalEnergyConsumption)
 
         num_rec = len(ParameterConfig.recPackets)
@@ -137,7 +139,8 @@ def MAB_train(nodes):
             MAB_Config.MinEnergyEfficiency.append(min(ParameterConfig.EnergyEfficiencyPerNode))
             MAB_Config.MaxEnergyEfficiency.append(max(ParameterConfig.EnergyEfficiencyPerNode))
             MAB_Config.NetworkEnergyEfficiency.append(NetEnergyEfficiency)
-            MAB_Config.JainFairness.append(Jain_Fairness_Index(nodes))
+            MAB_Config.EEJainFairness.append(EE_Jain_Fairness_Index(nodes))
+            MAB_Config.ThroughputJainFairness.append(Throughput_Jain_Fairness_Index(nodes))
             MAB_Config.Network_PDR.append(pdr)
             MAB_Config.Network_Throughput.append(NetThroughput)
 
@@ -147,14 +150,14 @@ def MAB_train(nodes):
         if ParameterConfig.storage_flag == 1:
             with open(result_file_path, 'a') as file:
                 # file.write(f"episode={episode}, mum of sent packets={sumSent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}\n")
-                file.write(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={JainFairness:.2f}, PDR={pdr:.2f}\n")
+                file.write(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={EEJainFairness:.2f}, PDR={pdr:.2f}\n")
                 # if allocation_method == "MAB":
                 #     for node in nodes:
                 #         file.write(f"node id={node.id}, Q_SF = {node.agent.Q_SF}, Q_BW = {node.agent.Q_BW}, Q_Fre = {node.agent.Q_Fre}\n")          
             
         # print(f"episode={episode}, mum of sent packets={sumSent}, num of received packets={num_rec}, num of lost packets={num_lost}, PDR={pdr:.2f}, actual sim duration={sim_time_per_episode:.2f}")
         # print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, MinEnergyEfficiency={MinEnergyEfficiency:.2f}, MaxEnergyEfficiency={MaxEnergyEfficiency:.2f}, Jain's Fairness Index={JainFairness:.2f}, PDR={pdr:.2f}")
-        print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, Network Throughput={NetThroughput:.2f}, Network EE={NetEnergyEfficiency:.2f}, PDR={pdr:.2f}")
+        print(f"episode={episode}, mum of sent packets={sumSent}, num of lost packets=powerloss:{len(ParameterConfig.lostPackets)}+collided:{len(ParameterConfig.collidedPackets)}={num_lost}, Network Throughput={NetThroughput:.2f}, Network EE={NetEnergyEfficiency:.2f}, PDR={pdr:.2f}, Throughput Variance={ThroughputVariance:.3f}")
 
 
         if episode == MAB_Config.num_episode:
@@ -163,20 +166,30 @@ def MAB_train(nodes):
             if (graphics == 1):
                 plt.figure(figsize=(6, 6))
                 ax = plt.gcf().gca()
-                for GW in bs:
-                    graphics_gateway(GW,ax)
+                legend_elements = []
+                flag = 0
+
                 for node in nodes:
                     graphics_node(node,ax)
+                    if node.bs.id == 0 and flag == 0:
+                        legend_elements.append(Line2D([0], [0], marker='o', color='w', label='Node', markerfacecolor='blue', markersize=6))
+                        flag = 1
+                for GW in bs:
+                    graphics_gateway(GW,ax)
+                    if GW.id == 0:
+                        legend_elements.append(Line2D([0], [0], marker='^', color='w', label='Gateway', markerfacecolor='red', markersize=8))
 
                 # 保证生成的图像是正方形
                 ax.set_aspect('equal')
 
-                plt.xlim([-radius, radius])
-                plt.ylim([-radius, radius])
+                plt.xlabel('Distance (m)')
+                plt.ylabel('Distance (m)')
+                plt.xlim(-(radius+100), radius+100)
+                plt.ylim(-(radius+100), radius+100)
                 
                 plt.tick_params(axis='x', direction='in')  
                 plt.tick_params(axis='y', direction='in')  
-                plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
+                
                 # 创建虚拟 ScalarMappable 对象来生成颜色条
                 sm = ScalarMappable(cmap=cm.plasma)
                 sm.set_array([])  # 设置一个空数组，因为颜色映射实际上不需要数据
@@ -185,10 +198,13 @@ def MAB_train(nodes):
                 cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
                 cbar.set_label('Normalized Throughput')  # 设置颜色条的标签
 
+                # 添加图例
+                ax.legend(handles=legend_elements, loc='upper right')
+
                 if storage_flag == 1:  
                     fig_name = 'network_tropology.png'
-                    plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800) 
-            
+                    plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800, bbox_inches='tight')   
+                
             '''Test results'''  
             if ParameterConfig.storage_flag == 1:
                 config_file = "MAB-Result.txt" # txt results of each episode in training process
@@ -240,7 +256,9 @@ def MAB_train(nodes):
                     file.write("Maximum PDR: {:.2f} %\n".format(max(ParameterConfig.PDRPerNode)))
                     file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(NetEnergyEfficiency))
                     file.write("Minimum Energy efficiency: {:.3f} bits/mJ\n".format(MinEnergyEfficiency))
-                    file.write("Jain's fairness index: {:.3f}".format(JainFairness))
+                    file.write("Energy Efficiency Jain's fairness index: {:.3f}".format(EEJainFairness))
+                    file.write("Throughput Jain's fairness index:  {:.3e}".format(ThroughputJainFairness))
+                    file.write("Throughput Jain's fairness index:  {:.3f}".format(ThroughputVariance))
                     file.close()
             
     # end of training
@@ -319,7 +337,7 @@ def plot(result_folder_path):
     '''Jain's Faireness Index'''
     plt.figure()
     x = range(1,MAB_Config.num_episode+1)
-    plt.plot(x, MAB_Config.JainFairness, label='Jain Faireness Index', color='blue')
+    plt.plot(x, MAB_Config.EEJainFairness, label='Jain Faireness Index', color='blue')
 
     plt.title('Jains Faireness Index changes with increasing episode')
     plt.xlabel('Episode')

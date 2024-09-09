@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.cm import ScalarMappable
+from matplotlib.lines import Line2D
 from ParameterConfig import *
 import ParameterConfig
 from Gateway import myBS, graphics_gateway
@@ -26,7 +27,10 @@ class Simulation:
         self.EnergyEfficiency = 0 # Network Energy efficiency (bits/mJoule)
 
         self.MinEnergyEfficiency = 0 # Minimum energy efficiency among the nodes (bits/mJoule)
-        self.JainFairness = 0 # Jain's fairness index
+        self.EEJainFairness = 0 # Jain's fairness index
+        self.ThroughputJainFairness = 0
+        self.ThroughputVariance = 0
+        
         ParameterConfig.result_folder_path, self.result_file = result_file()
 
     def run(self):
@@ -132,8 +136,9 @@ class Simulation:
         ParameterConfig.MaxThroughput = max(ThroughputPerNode)
         self.PDRMin = min(PDRPerNode)
         self.PDRMax = max(PDRPerNode)
-        self.JainFairness = Jain_Fairness_Index(nodes)
-
+        self.EEJainFairness = EE_Jain_Fairness_Index(nodes)
+        self.ThroughputJainFairness = Throughput_Jain_Fairness_Index(nodes)
+        self.ThroughputVariance = Throughput_Variance(nodes)
 
 
     def results_show(self):
@@ -165,7 +170,10 @@ class Simulation:
         print("Maximum PDR: {:.2f} %".format(self.PDRMax))
         print ("Network Energy efficiency: {:.3f} bits/mJ".format(self.EnergyEfficiency))
         print ("Minimum Energy efficiency: {:.3f} bits/mJ".format(self.MinEnergyEfficiency))
-        print ("Jain's fairness index: {:.3e}".format(self.JainFairness))
+        print ("EE Jain's fairness index: {:.3e}".format(self.EEJainFairness))
+        print ("Throughput Jain's fairness index: {:.3e}".format(self.ThroughputJainFairness))
+        print("Throughput Varance:  {:.3f}".format(self.ThroughputVariance))
+
 
         # this can be done to keep graphics visible
         if (graphics == 1):
@@ -177,20 +185,30 @@ class Simulation:
         if (graphics == 1):
             plt.figure(figsize=(6, 6))
             ax = plt.gcf().gca()
-            for GW in bs:
-                graphics_gateway(GW,ax)
+            legend_elements = []
+            flag = 0
+
             for node in nodes:
                 graphics_node(node,ax)
+                if node.bs.id == 0 and flag == 0:
+                    legend_elements.append(Line2D([0], [0], marker='o', color='w', label='Node', markerfacecolor='blue', markersize=6))
+                    flag = 1
+            for GW in bs:
+                graphics_gateway(GW,ax)
+                if GW.id == 0:
+                    legend_elements.append(Line2D([0], [0], marker='^', color='w', label='Gateway', markerfacecolor='red', markersize=8))
 
             # 保证生成的图像是正方形
             ax.set_aspect('equal')
 
-            plt.xlim([-radius, radius])
-            plt.ylim([-radius, radius])
+            plt.xlabel('Distance (m)')
+            plt.ylabel('Distance (m)')
+            plt.xlim(-(radius+100), radius+100)
+            plt.ylim(-(radius+100), radius+100)
             
             plt.tick_params(axis='x', direction='in')  
             plt.tick_params(axis='y', direction='in')  
-            plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
+            
             # 创建虚拟 ScalarMappable 对象来生成颜色条
             sm = ScalarMappable(cmap=cm.plasma)
             sm.set_array([])  # 设置一个空数组，因为颜色映射实际上不需要数据
@@ -199,9 +217,12 @@ class Simulation:
             cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
             cbar.set_label('Normalized Throughput')  # 设置颜色条的标签
 
+            # 添加图例
+            ax.legend(handles=legend_elements, loc='upper right')
+
             if storage_flag == 1:  
                 fig_name = 'network_tropology.png'
-                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800)   
+                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800, bbox_inches='tight')   
 
         '''Simulation Results'''
         with open(self.result_file, 'w') as file:
@@ -255,7 +276,9 @@ class Simulation:
             file.write("Maximum PDR: {:.2f} %\n".format(self.PDRMax))
             file.write("Network Energy efficiency: {:.3f} bits/mJ\n".format(self.EnergyEfficiency))
             file.write("Minimum Energy efficiency: {:.3f} bits/mJ\n".format(self.MinEnergyEfficiency))
-            file.write("Jain's fairness index: {:.3f}".format(self.JainFairness))
+            file.write("EE Jain's fairness index: {:.3f}".format(self.EEJainFairness))
+            file.write("Throughput Jain's fairness index:  {:.3e}".format(self.ThroughputJainFairness))
+            file.write("Throughput Varance:  {:.3f}".format(self.ThroughputVariance))
 
 def result_file():
      baseline_folder_path = '/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL' 

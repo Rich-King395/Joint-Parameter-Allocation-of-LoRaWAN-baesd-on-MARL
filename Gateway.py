@@ -56,7 +56,7 @@ def graphics_gateway(GW,ax):
     # XXX should be base station position
     # deaw different BSs according to their ids
     if (GW.id == 0):
-        triangle = RegularPolygon((GW.x, GW.y), numVertices=3, radius=20*(radius/1000), orientation=0, color='red', fill=True)
+        triangle = RegularPolygon((GW.x, GW.y), numVertices=3, radius=20*(radius/1000), orientation=0, color='red', fill=True, label='Gateway')
         ax.add_patch(triangle)
         # ax.add_artist(plt.Circle((GW.x, GW.y), 20*(radius/1000), fill=True, color='red'))
         # ax.add_artist(plt.Circle((self.x, self.y), maxDist, fill=False, color='blue'))

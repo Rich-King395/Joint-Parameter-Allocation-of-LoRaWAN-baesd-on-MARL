@@ -315,7 +315,7 @@ def transmit(env,node):
 def graphics_node(node,ax):
     colors = cm.plasma(node.Throughput/ParameterConfig.MaxThroughput)
     if (node.bs.id == 0):
-            ax.add_artist(plt.Circle((node.x, node.y), 6*(radius/1000), fill=True, color=colors))
+            ax.add_artist(plt.Circle((node.x, node.y), 10*(radius/1000), fill=True, color=colors, label='Node'))
     if (node.bs.id == 1):
             ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='red'))
     if (node.bs.id == 2):
