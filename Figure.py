@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 import numpy as np
 import os
 
 def Net_Per_Index_Calculation(pdr_data, EE_data, Throughput_data):
-    alpha = 0.5
-    beta = 0.25
-    gamma = 0.25
+    alpha = 1/3
+    beta = 1/3
+    gamma = 1/3
     weights = [alpha, beta, gamma]
     keys = list(pdr_data.keys())
     pdr_list = []
@@ -42,15 +43,23 @@ radius_node_50_pdr_data = {
     'Round-Robin': [75.11, 62.51, 55.19, 51.21, 40.83],
     'ADR': [80.41, 75.64, 70.22, 67.31, 59.25],
     'RSLoRa': [66.62, 56.19,  49.33, 45.42, 39.84],
-    'DALoRa': [90.91, 89.83, 88.30, 85.81, 80.14]
+    'DALoRa-Balance': [90.91, 89.83, 88.30, 85.81, 80.14],
+    'DALoRa-PDR': [95.30, 92.14, 89.46, 86.70, 79.66],
+    'DALoRa-EE': [84.14, 80.89, 78.73, 79.07, 74.86],
+    'DALoRa-Throughput': [89.91, 83.68, 74.99, 77.65, 72.86]
+    
 }
 
 radius_node_50_NetEE_data = {
-    'Random': [5.790, 4.901, 4.314, 3.976, 3.260],
-    'Round-Robin': [6.633, 5.520, 4.874, 4.522, 3.606],
-    'ADR': [5.977, 4.389, 3.375, 2.953, 2.047],
-    'RSLoRa': [13.808, 8.624, 6.239, 5.276, 2.960],
-    'DALoRa': [10.527, 4.950, 2.791, 2.631, 1.620]
+    'Random': [46.32, 39.208, 34.512, 31.808, 26.08],
+    'Round-Robin': [53.064, 44.16, 38.992, 36.176, 28.848],
+    'ADR': [47.816, 35.112, 27.0, 23.624, 16.376],
+    'RSLoRa': [110.464, 68.992, 49.912, 42.208, 23.68],
+    'DALoRa-Balance': [84.216, 39.6, 22.328, 21.048, 12.96],
+    'DALoRa-PDR': [25.673, 23.469, 21.318, 17.253, 13.450],
+    'DALoRa-EE': [125.187, 50.790, 37.688, 23.146, 14.760],
+    'DALoRa-Throughput': [36.688, 26.077, 17.466, 8.863, 8.064]
+    
 }
 
 radius_node_50_Throughput_data = {
@@ -58,7 +67,11 @@ radius_node_50_Throughput_data = {
     'Round-Robin': [498.439, 414.796, 366.239, 339.808, 270.949],
     'ADR': [869.959, 718.901, 590.566, 527.757, 379.855],
     'RSLoRa': [418.612, 353.071, 309.995, 285.417, 250.312],
-    'DALoRa': [573.615, 551.314, 490.888, 461.912, 304.005]
+    'DALoRa-Balance': [573.615, 551.314, 490.888, 461.912, 304.005],
+    'DALoRa-PDR': [617.031, 552.995, 535.476, 432.262, 335.355],
+    'DALoRa-EE': [412.128, 357.050, 381.230, 347.664, 291.953],
+    'DALoRa-Throughput': [887.723, 652.130, 428.261, 220.658, 201.981]
+
 }
 
 radius_node_300_pdr_data = {
@@ -66,7 +79,7 @@ radius_node_300_pdr_data = {
     'Round-Robin': [23.61, 21.69, 19.92, 18.33, 16.83],
     'ADR': [38.19, 33.34, 28.82, 25.59, 22.23],
     'RSLoRa': [21.12, 19.88, 18.48, 17.54, 16.33],
-    'DALoRa': [90.91, 89.83, 88.30, 85.81, 80.14]
+    'DALoRa': [90.91, 89.83, 88.30, 85.81, 27.96]
 }
 
 radius_node_300_NetEE_data = {
@@ -74,7 +87,7 @@ radius_node_300_NetEE_data = {
     'Round-Robin': [16.602, 15.995, 14.005, 12.892, 11.834],
     'ADR': [23.430, 15.995, 11.371, 8.914, 6.506],
     'RSLoRa': [28.290, 20.468, 15.251, 12.912, 10.735],
-    'DALoRa': [10.527, 4.950, 2.791, 2.631, 1.620]
+    'DALoRa': [10.527, 4.950, 2.791, 2.631, 9.819]
 }
 
 radius_node_300_Throughput_data = {
@@ -82,7 +95,7 @@ radius_node_300_Throughput_data = {
     'Round-Robin': [154.819, 142.220, 130.604, 120.219, 110.360],
     'ADR': [417.942, 322.112, 246.166, 198.817, 149.754],
     'RSLoRa': [133.807, 125.914, 117.065, 111.123, 103.440],
-    'DALoRa': [573.615, 551.314, 490.888, 461.912, 304.005]
+    'DALoRa': [573.615, 551.314, 490.888, 461.912, 155.269]
 }
 
 # radius_NetPer_data = {
@@ -153,33 +166,49 @@ radius = [1000, 1500, 2000, 2500, 3000]
 num_of_nodes = [50, 100, 150, 200, 250]
 
 # 颜色和标签
-colors_rgb = [(128,128,128), (243,177,105), (88,159,243), (167,210,186), (249,65,65)]
+colors_rgb = [(128,128,128), (243,177,105), (88,159,243), (167,210,186), (237,116,106),(237,116,106), (237,116,106), (237,116,106)]
 colors = [(r/255, g/255, b/255) for r, g, b in colors_rgb]
 
-makers = ['o', '+', 's', '^', '*']
-labels = list(radius_pdr_data.keys())
+makers = ['o', '+', 's', '^', '*', 'x', 'v', '<', '>', 'p']
+# Define a list of hatch patterns to use
+hatch_patterns = ['+', 'o', '\\\\']
+
+labels = list(radius_node_300_pdr_data.keys())
 
 '''Network PDR'''
-plt.figure(figsize=(8, 6))  # 设置图形大小
+plt.figure(figsize=(15, 9))  # 设置图形大小
 
-bar_width = 50  # 柱子宽度
+bar_width = 40  # 柱子宽度
 spacing = bar_width / 5  # 柱子间隔
-num_algorithms = len(radius_pdr_data)
+num_algorithms = len(radius_node_300_pdr_data)
 
-for i, (algo, pdr_values) in enumerate(radius_pdr_data.items()):
+for i, (algo, pdr_values) in enumerate(radius_node_50_pdr_data.items()):
     offset = bar_width * (num_algorithms - 1) / 2  # 计算每个算法的偏移量
-    plt.bar([r + i * (bar_width+spacing) - offset for r in radius], pdr_values, width=bar_width, color=colors[i], edgecolor='black', linewidth=0.4, label=algo)
+
+    if i > 4:
+        hatch_idx = (i-4) % len(hatch_patterns)
+        hatch = hatch_patterns[hatch_idx]
+        plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], label=algo, edgecolor='white', hatch=hatch, linewidth=0.2)
+    else:
+        plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.4, label=algo)
 
 plt.xlabel('Topology Radius (m)')
 plt.ylabel('Network PDR (%)')
 # plt.title('Network PDR for Different LoRa Parameter Allocation Algorithms')
-plt.xticks(radius)
+plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
 plt.yticks(range(0, 101, 10))
 plt.ylim(0, 100)
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-plt.legend()
+fontP = FontProperties()
+fontP.set_size('xx-small')
+plt.legend(loc='upper center',bbox_to_anchor=(0.5, 1.05), ncol=8) 
+# legend = plt.legend(fontsize='small')
+# for text in legend.get_texts():
+#     text.set_alpha(0.5)
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
+
+
 plt.show()
 
 figure_folder_path = "/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/Figures"
@@ -190,21 +219,26 @@ plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='ti
 
 
 '''Network EE'''
-plt.figure(figsize=(8, 6))  # 设置图形大小
+plt.figure(figsize=(15, 9))  # 设置图形大小
 
-for i, (algo, pdr_values) in enumerate(radius_NetEE_data.items()):
+for i, (algo, pdr_values) in enumerate(radius_node_50_NetEE_data.items()):
     offset = bar_width * (num_algorithms - 1) / 2  # 计算每个算法的偏移量
-    plt.bar([r + i * (bar_width+spacing) - offset for r in radius], pdr_values, width=bar_width, color=colors[i], edgecolor='black', linewidth=0.4, label=algo)
+    if i > 4:
+        hatch_idx = (i-4) % len(hatch_patterns)
+        hatch = hatch_patterns[hatch_idx]
+        plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], label=algo, edgecolor='white', hatch=hatch, linewidth=0.2)
+    else:
+        plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.2, label=algo)
 
 plt.xlabel('Topology Radius (m)')
 plt.ylabel('Network Energy Efficiency (bits/mJ)')
 # plt.title('Network Energy Efficiency for Different LoRa Parameter Allocation Algorithms')
-plt.xticks(radius)
-plt.yticks(range(0, 16, 1))
-plt.ylim(0, 15) 
+plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
+plt.yticks(range(0, 131, 10))
+plt.ylim(0, 130) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-plt.legend()
+# plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
@@ -212,21 +246,26 @@ fig_name = 'TropologyRadius_NetworkEE_bar_chart.png'
 plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 '''Network Throughput'''
-plt.figure(figsize=(8, 6))  # 设置图形大小
+plt.figure(figsize=(15, 9))  # 设置图形大小
 
-for i, (algo, pdr_values) in enumerate(radius_Throughput_data.items()):
+for i, (algo, pdr_values) in enumerate(radius_node_50_Throughput_data.items()):
     offset = bar_width * (num_algorithms - 1) / 2  # 计算每个算法的偏移量
-    plt.bar([r + i * (bar_width+spacing) - offset for r in radius], pdr_values, width=bar_width, color=colors[i], edgecolor='black', linewidth=0.4, label=algo)
+    if i > 4:
+        hatch_idx = (i-4) % len(hatch_patterns)
+        hatch = hatch_patterns[hatch_idx]
+        plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], label=algo, edgecolor='white', hatch=hatch, linewidth=0.2)
+    else:
+        plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.2, label=algo)
 
 plt.xlabel('Topology Radius (m)')
 plt.ylabel('Network Throughput (bps)')
 # plt.title('Network Throughput for Different LoRa Parameter Allocation Algorithms')
-plt.xticks(radius)
-plt.yticks(range(0, 950, 100))
+plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
+plt.yticks(range(0, 901, 100))
 plt.ylim(0, 900) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-plt.legend()
+# plt.legend(fontsize='small')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
@@ -235,14 +274,14 @@ plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='ti
 
 
 '''Network Performance'''
-radius_NetPer_data = Net_Per_Index_Calculation(radius_pdr_data, radius_NetEE_data, radius_Throughput_data)
+radius_NetPer_data = Net_Per_Index_Calculation(radius_node_50_pdr_data, radius_node_50_NetEE_data, radius_node_50_Throughput_data)
 # print(radius_NetPer_data)
 
 
 labels = list(radius_NetPer_data.keys())
 data = list(radius_NetPer_data.values())
 
-plt.figure(figsize=(8, 6))  # 设置图形大小
+plt.figure(figsize=(15, 9))  # 设置图形大小
 
 for i, (label, values) in enumerate(radius_NetPer_data.items()):
     plt.plot(radius, values, linestyle='-', marker=makers[i], markersize=5, color=colors[i], label=label,  linewidth=0.8)
@@ -255,7 +294,7 @@ plt.yticks([round(num, 3) for num in list(np.arange(0, 1.1, 0.10))])
 plt.ylim(0, 1) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-plt.legend()
+# plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
