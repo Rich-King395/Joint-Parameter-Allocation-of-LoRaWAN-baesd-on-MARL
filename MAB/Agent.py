@@ -44,11 +44,11 @@ class MAB:
         # print("self.reward=",self.reward)
         # print("SF index",k_sf)
 
-        self.rewards[0] = self.rewards[0] + 5*float((SF[k_sf]/(2^SF[k_sf]))/SF_SUM)
+        self.rewards[0] = self.rewards[0] + float((SF[k_sf]/(2^SF[k_sf]))/SF_SUM)
         #print("self.rewards[0]=",float(self.rewards[0]))
         self.Q_SF[k_sf] += (self.rewards[0] - self.Q_SF[k_sf]) / (self.counts_SF[k_sf] + 1)
         
-        self.rewards[1] = self.rewards[1] - 5*float((Bandwidth[k_bw])/BW_SUM)
+        self.rewards[1] = self.rewards[1] - float((Bandwidth[k_bw])/BW_SUM)
         self.Q_BW[k_bw] +=  (self.rewards[1] - self.Q_SF[k_bw]) / (self.counts_BW[k_bw] + 1)
 
         self.Q_Fre[k_fre] += (self.rewards[2] - self.Q_Fre[k_fre]) / (self.counts_Fre[k_fre] + 1)

@@ -38,41 +38,78 @@ def Net_Per_Index_Calculation(pdr_data, EE_data, Throughput_data):
         Net_Per_Index[key] = weighted_values
     return Net_Per_Index
 
+# radius_node_50_pdr_data = {
+#     'Random': [70.76, 59.89, 52.72, 48.59, 39.84],
+#     'Round-Robin': [75.11, 62.51, 55.19, 51.21, 40.83],
+#     'ADR': [80.41, 75.64, 70.22, 67.31, 59.25],
+#     'RSLoRa': [66.62, 56.19,  49.33, 45.42, 39.84],
+#     'DALoRa-Balance': [90.91, 89.83, 88.30, 85.81, 80.14],
+#     'DALoRa-PDR': [95.30, 92.14, 89.46, 86.70, 79.66],
+#     'DALoRa-EE': [84.14, 80.89, 78.73, 79.07, 74.86],
+#     'DALoRa-Throughput': [89.91, 83.68, 74.99, 77.65, 72.86]
+    
+# }
+
+# radius_node_50_NetEE_data = {
+#     'Random': [46.32, 39.208, 34.512, 31.808, 26.08],
+#     'Round-Robin': [53.064, 44.16, 38.992, 36.176, 28.848],
+#     'ADR': [47.816, 35.112, 27.0, 23.624, 16.376],
+#     'RSLoRa': [110.464, 68.992, 49.912, 42.208, 23.68],
+#     'DALoRa-Balance': [84.216, 39.6, 22.328, 21.048, 12.96],
+#     'DALoRa-PDR': [25.673, 23.469, 21.318, 17.253, 13.450],
+#     'DALoRa-EE': [125.187, 50.790, 37.688, 23.146, 14.760],
+#     'DALoRa-Throughput': [36.688, 26.077, 17.466, 8.863, 8.064]
+    
+# }
+
+# radius_node_50_Throughput_data = {
+#     'Random': [431.609, 365.315, 321.570, 296.404, 243.020],
+#     'Round-Robin': [498.439, 414.796, 366.239, 339.808, 270.949],
+#     'ADR': [869.959, 718.901, 590.566, 527.757, 379.855],
+#     'RSLoRa': [418.612, 353.071, 309.995, 285.417, 250.312],
+#     'DALoRa-Balance': [573.615, 551.314, 490.888, 461.912, 304.005],
+#     'DALoRa-PDR': [617.031, 552.995, 535.476, 432.262, 335.355],
+#     'DALoRa-EE': [412.128, 357.050, 381.230, 347.664, 291.953],
+#     'DALoRa-Throughput': [887.723, 652.130, 428.261, 220.658, 201.981]
+
+# }
+
 radius_node_50_pdr_data = {
-    'Random': [70.76, 59.89, 52.72, 48.59, 39.84],
-    'Round-Robin': [75.11, 62.51, 55.19, 51.21, 40.83],
-    'ADR': [80.41, 75.64, 70.22, 67.31, 59.25],
-    'RSLoRa': [66.62, 56.19,  49.33, 45.42, 39.84],
-    'DALoRa-Balance': [90.91, 89.83, 88.30, 85.81, 80.14],
-    'DALoRa-PDR': [95.30, 92.14, 89.46, 86.70, 79.66],
-    'DALoRa-EE': [84.14, 80.89, 78.73, 79.07, 74.86],
-    'DALoRa-Throughput': [89.91, 83.68, 74.99, 77.65, 72.86]
+    'Random': [70.76, 59.89, 52.72, 48.59],
+    'Round-Robin': [75.11, 62.51, 55.19, 51.21],
+    'ADR': [80.41, 75.64, 70.22, 67.31],
+    'RSLoRa': [66.62, 56.19,  49.33, 45.42],
+    'DALoRa-Balance': [90.91, 89.83, 88.30, 85.81],
+    'DALoRa-PDR': [95.30, 92.14, 89.46, 86.70],
+    'DALoRa-EE': [84.14, 80.89, 78.73, 79.07],
+    'DALoRa-Throughput': [89.91, 83.68, 74.99, 77.65]
     
 }
 
 radius_node_50_NetEE_data = {
-    'Random': [46.32, 39.208, 34.512, 31.808, 26.08],
-    'Round-Robin': [53.064, 44.16, 38.992, 36.176, 28.848],
-    'ADR': [47.816, 35.112, 27.0, 23.624, 16.376],
-    'RSLoRa': [110.464, 68.992, 49.912, 42.208, 23.68],
-    'DALoRa-Balance': [84.216, 39.6, 22.328, 21.048, 12.96],
-    'DALoRa-PDR': [25.673, 23.469, 21.318, 17.253, 13.450],
-    'DALoRa-EE': [125.187, 50.790, 37.688, 23.146, 14.760],
-    'DALoRa-Throughput': [36.688, 26.077, 17.466, 8.863, 8.064]
+    'Random': [46.32, 39.208, 34.512, 31.808],
+    'Round-Robin': [53.064, 44.16, 38.992, 36.176],
+    'ADR': [47.816, 35.112, 27.0, 23.624],
+    'RSLoRa': [110.464, 68.992, 49.912, 42.208],
+    'DALoRa-Balance': [84.216, 39.6, 22.328, 21.048],
+    'DALoRa-PDR': [25.673, 23.469, 21.318, 17.253],
+    'DALoRa-EE': [125.187, 50.790, 37.688, 23.146],
+    'DALoRa-Throughput': [36.688, 26.077, 17.466, 8.863]
     
 }
 
 radius_node_50_Throughput_data = {
-    'Random': [431.609, 365.315, 321.570, 296.404, 243.020],
-    'Round-Robin': [498.439, 414.796, 366.239, 339.808, 270.949],
-    'ADR': [869.959, 718.901, 590.566, 527.757, 379.855],
-    'RSLoRa': [418.612, 353.071, 309.995, 285.417, 250.312],
-    'DALoRa-Balance': [573.615, 551.314, 490.888, 461.912, 304.005],
-    'DALoRa-PDR': [617.031, 552.995, 535.476, 432.262, 335.355],
-    'DALoRa-EE': [412.128, 357.050, 381.230, 347.664, 291.953],
-    'DALoRa-Throughput': [887.723, 652.130, 428.261, 220.658, 201.981]
+    'Random': [431.609, 365.315, 321.570, 296.404],
+    'Round-Robin': [498.439, 414.796, 366.239, 339.808],
+    'ADR': [869.959, 718.901, 590.566, 527.757],
+    'RSLoRa': [418.612, 353.071, 309.995, 285.417],
+    'DALoRa-Balance': [573.615, 551.314, 490.888, 461.912],
+    'DALoRa-PDR': [617.031, 552.995, 535.476, 432.262],
+    'DALoRa-EE': [412.128, 357.050, 381.230, 347.664],
+    'DALoRa-Throughput': [887.723, 652.130, 428.261, 220.658]
 
 }
+
 
 radius_node_300_pdr_data = {
     'Random': [21.17, 19.61, 17.95, 17.00, 15.69],
@@ -160,7 +197,7 @@ num_Throughput_data = {
 # }
 
 # Network tropology radius
-radius = [1000, 1500, 2000, 2500, 3000]
+radius = [1000, 1500, 2000, 2500]
 
 # Number of nodes
 num_of_nodes = [50, 100, 150, 200, 250]
@@ -171,14 +208,14 @@ colors = [(r/255, g/255, b/255) for r, g, b in colors_rgb]
 
 makers = ['o', '+', 's', '^', '*', 'x', 'v', '<', '>', 'p']
 # Define a list of hatch patterns to use
-hatch_patterns = ['+', 'o', '\\\\']
+hatch_patterns = ['//', 'o', '\\\\']
 
 labels = list(radius_node_300_pdr_data.keys())
 
 '''Network PDR'''
 plt.figure(figsize=(15, 9))  # 设置图形大小
 
-bar_width = 40  # 柱子宽度
+bar_width = 30  # 柱子宽度
 spacing = bar_width / 5  # 柱子间隔
 num_algorithms = len(radius_node_300_pdr_data)
 
@@ -196,13 +233,14 @@ plt.xlabel('Topology Radius (m)')
 plt.ylabel('Network PDR (%)')
 # plt.title('Network PDR for Different LoRa Parameter Allocation Algorithms')
 plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
-plt.yticks(range(0, 101, 10))
-plt.ylim(0, 100)
+plt.yticks(range(40, 101, 10))
+plt.ylim(40, 100)
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-fontP = FontProperties()
-fontP.set_size('xx-small')
-plt.legend(loc='upper center',bbox_to_anchor=(0.5, 1.05), ncol=8) 
+# fontP = FontProperties()
+# fontP.set_size('xx-small')
+plt.legend(fontsize='medium',loc='upper right')
+ 
 # legend = plt.legend(fontsize='small')
 # for text in legend.get_texts():
 #     text.set_alpha(0.5)
@@ -238,7 +276,8 @@ plt.yticks(range(0, 131, 10))
 plt.ylim(0, 130) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-# plt.legend()
+# plt.legend(loc='upper center',bbox_to_anchor=(0.5, 1.05), ncol=8) 
+plt.legend(fontsize='medium',loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
@@ -265,7 +304,7 @@ plt.yticks(range(0, 901, 100))
 plt.ylim(0, 900) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-# plt.legend(fontsize='small')
+plt.legend(fontsize='medium',loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
@@ -281,7 +320,7 @@ radius_NetPer_data = Net_Per_Index_Calculation(radius_node_50_pdr_data, radius_n
 labels = list(radius_NetPer_data.keys())
 data = list(radius_NetPer_data.values())
 
-plt.figure(figsize=(15, 9))  # 设置图形大小
+plt.figure(figsize=(12, 9))  # 设置图形大小
 
 for i, (label, values) in enumerate(radius_NetPer_data.items()):
     plt.plot(radius, values, linestyle='-', marker=makers[i], markersize=5, color=colors[i], label=label,  linewidth=0.8)
@@ -294,7 +333,7 @@ plt.yticks([round(num, 3) for num in list(np.arange(0, 1.1, 0.10))])
 plt.ylim(0, 1) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-# plt.legend()
+plt.legend(fontsize='medium', loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
