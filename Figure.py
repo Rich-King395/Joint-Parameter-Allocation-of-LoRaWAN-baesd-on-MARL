@@ -213,9 +213,9 @@ hatch_patterns = ['//', 'o', '\\\\']
 labels = list(radius_node_300_pdr_data.keys())
 
 '''Network PDR'''
-plt.figure(figsize=(15, 9))  # 设置图形大小
+plt.figure(figsize=(9, 9))  # 设置图形大小
 
-bar_width = 30  # 柱子宽度
+bar_width = 40  # 柱子宽度
 spacing = bar_width / 5  # 柱子间隔
 num_algorithms = len(radius_node_300_pdr_data)
 
@@ -257,7 +257,7 @@ plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='ti
 
 
 '''Network EE'''
-plt.figure(figsize=(15, 9))  # 设置图形大小
+plt.figure(figsize=(9, 9))  # 设置图形大小
 
 for i, (algo, pdr_values) in enumerate(radius_node_50_NetEE_data.items()):
     offset = bar_width * (num_algorithms - 1) / 2  # 计算每个算法的偏移量
@@ -277,7 +277,7 @@ plt.ylim(0, 130)
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
 # plt.legend(loc='upper center',bbox_to_anchor=(0.5, 1.05), ncol=8) 
-plt.legend(fontsize='medium',loc='upper right')
+# plt.legend(fontsize='medium',loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
@@ -285,7 +285,7 @@ fig_name = 'TropologyRadius_NetworkEE_bar_chart.png'
 plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 '''Network Throughput'''
-plt.figure(figsize=(15, 9))  # 设置图形大小
+plt.figure(figsize=(9, 9))  # 设置图形大小
 
 for i, (algo, pdr_values) in enumerate(radius_node_50_Throughput_data.items()):
     offset = bar_width * (num_algorithms - 1) / 2  # 计算每个算法的偏移量
@@ -304,7 +304,7 @@ plt.yticks(range(0, 901, 100))
 plt.ylim(0, 900) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-plt.legend(fontsize='medium',loc='upper right')
+# plt.legend(fontsize='medium',loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
