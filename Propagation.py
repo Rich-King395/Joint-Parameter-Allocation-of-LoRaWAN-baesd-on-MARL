@@ -100,7 +100,7 @@ def rssi(Ptx,distance):
     #  Lpl = Lpld0+10*gamma*math.log10(distance/d0)
     # print (Lpl)
     Prx = Ptx + GL - Lpl
-    return Prx
+    return Prx, Lpl
 
 def snr(packet):
     # noise_floor = -174 + 10 * math.log10(125e3)
@@ -121,10 +121,10 @@ def snr(packet):
     return SNR_dB
     
 def checklost(packet,distance):
-    packet.RSSI = rssi(packet.tp,distance)
+    packet.RSSI, packet.Path_Loss = rssi(packet.tp,distance)
     packet.SNR = snr(packet)
     # if packet.RSSI < packet.minisensi:
     # if packet.SNR < packet.miniSNR:
     if packet.RSSI < packet.minisensi or packet.SNR < packet.miniSNR:
         packet.lost = True
-    return packet.RSSI
+    return packet.RSSI, packet.Path_Loss

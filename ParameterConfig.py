@@ -76,10 +76,11 @@ PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
 #allocation_method = "ADR"
-#allocation_method = "random"
+allocation_method = "random"
 #allocation_method = "Round Robin"
 #allocation_method = "RS-LoRa"
-allocation_method = "DALoRa"
+#allocation_method = "DALoRa"
+
 nrNetworks = 1
 simtime = 1200000
 directionality = 1

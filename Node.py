@@ -24,6 +24,8 @@ class myNode:
         self.ADR_flag = 0 # the ADR flag of the node
         self.Generate_Packet_Flag = 0
 
+        self.last_path_loss = 0 # the path loss of the last packet sent by the node
+
         if allocation_method == "DALoRa":
             if MAB_Config.MAB_Variant == 0:
                 self.agent = EpsilonGreedy()
@@ -83,7 +85,7 @@ class myNode:
             elif allocation_method == "Round Robin":
                  PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = round_robin_allocation(self.id)
             elif allocation_method == "RS-LoRa":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.dist[i])
+                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.last_path_loss)
             elif allocation_method == "MARL":                     
                  PacketPara.sf = SF[self.agent.action[0]]
             elif allocation_method == "DALoRa":
@@ -99,7 +101,7 @@ class myNode:
                  PacketPara.bw = Bandwidth[self.bw_index]
                  PacketPara.fre = Carrier_Frequency[self.fre_index]
             packet = myPacket(self.id, PacketPara, i)
-            self.last_packet_rssi = checklost(packet,self.dist[i])
+            self.last_packet_rssi, self.last_path_loss = checklost(packet,self.dist[i])
             # if self.id == 0:
             #     print("last_packet_rssi", self.last_packet_rssi)
             self.packet.append(packet)
@@ -315,7 +317,12 @@ def transmit(env,node):
 def graphics_node(node,ax):
     colors = cm.plasma(node.Throughput/ParameterConfig.MaxThroughput)
     if (node.bs.id == 0):
-            ax.add_artist(plt.Circle((node.x, node.y), 10*(radius/1000), fill=True, color=colors, label='Node'))
+            # ax.add_artist(plt.Circle((node.x, node.y), 20*(radius/1000), fill=True, color=colors, label='Node'))
+            light_blue = (0.2, 0.4, 0.8, 1)
+            ax.add_artist(plt.Circle((node.x, node.y), 20*(radius/1000), fill=True, color=light_blue))
+            text_x = node.x + 10*(radius/1000)  # 调整文本的水平位置
+            text_y = node.y + 10*(radius/1000)  # 调整文本的垂直位置
+            ax.text(text_x, text_y, str(node.id), color='black', ha='left', va='bottom')
     if (node.bs.id == 1):
             ax.add_artist(plt.Circle((node.x, node.y), 4*(radius/1000), fill=True, color='red'))
     if (node.bs.id == 2):

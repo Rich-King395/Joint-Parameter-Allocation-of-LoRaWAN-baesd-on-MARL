@@ -27,6 +27,7 @@ class myPacket:
         self.minisensi = myPacket.GetReceiveSensitivity(self.sf,self.bw)
         self.miniSNR = myPacket.GetMiniSNR(self.sf)
 
+        self.Path_Loss = 0
         self.RSSI = 0
         self.SNR = 0
         

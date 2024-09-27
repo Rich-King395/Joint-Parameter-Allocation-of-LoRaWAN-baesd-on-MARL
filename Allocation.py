@@ -90,7 +90,7 @@ def ADR(PacketPara,last_packet_rssi,ADR_flag,id):
 
 probabilities = [float((7/(2^7))/(SF_SUM)), float((8/(2^8))/(SF_SUM)),float((9/(2^9))/(SF_SUM)),float((10/(2^10))/(SF_SUM)),float((11/(2^11))/(SF_SUM)),float((12/(2^12))/(SF_SUM))]
 
-def RS_LoRa(distance):
+def RS_LoRa(Path_Loss):
     bw = random.choice([125,250,500])
     fre = random.choice(Carrier_Frequency)
     sf = np.random.choice(SF, p=probabilities)
@@ -98,15 +98,14 @@ def RS_LoRa(distance):
     RS = myPacket.GetReceiveSensitivity(sf,bw) # Receiver sensitivity of this sf+bw config
 
     '''find the minimum TP that satisfies the receiver sensitivity'''
-    Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std) # estimated path loss of the packet
     TP_margin_list = []
     for TP in Transmission_Power:
-        if TP - Lpl - RS > 0:
-            TP_margin_list.append(TP - Lpl - RS)
+        if TP - Path_Loss - RS > 0:
+            TP_margin_list.append(TP - Path_Loss - RS)
         else:
             TP_margin_list.append(1000)
     min_index = np.argmin(TP_margin_list)
-    tp = Transmission_Power[min_index] + 3
+    tp = Transmission_Power[min_index] + 2 
 
     return sf,bw,fre,tp
 

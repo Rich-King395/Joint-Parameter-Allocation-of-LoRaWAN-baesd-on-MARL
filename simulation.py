@@ -183,7 +183,7 @@ class Simulation:
         '''Heatmap'''
          # prepare show
         if (graphics == 1):
-            plt.figure(figsize=(6, 6))
+            plt.figure(figsize=(9, 9))
             ax = plt.gcf().gca()
             legend_elements = []
             flag = 0
@@ -191,38 +191,51 @@ class Simulation:
             for node in nodes:
                 graphics_node(node,ax)
                 if node.bs.id == 0 and flag == 0:
-                    legend_elements.append(Line2D([0], [0], marker='o', color='w', label='Node', markerfacecolor='blue', markersize=6))
+                    legend_elements.append(Line2D([0], [0], marker='o', color='w', label='Node', markerfacecolor='blue', markersize=12))
                     flag = 1
             for GW in bs:
                 graphics_gateway(GW,ax)
                 if GW.id == 0:
-                    legend_elements.append(Line2D([0], [0], marker='^', color='w', label='Gateway', markerfacecolor='red', markersize=8))
-
-            # 保证生成的图像是正方形
-            ax.set_aspect('equal')
-
+                    legend_elements.append(Line2D([0], [0], marker='^', color='w', label='Gateway', markerfacecolor='red', markersize=16))
+            
+            """Network Tropology"""
             plt.xlabel('Distance (m)')
             plt.ylabel('Distance (m)')
-            plt.xlim(-(radius+100), radius+100)
-            plt.ylim(-(radius+100), radius+100)
-            
-            plt.tick_params(axis='x', direction='in')  
-            plt.tick_params(axis='y', direction='in')  
-            
-            # 创建虚拟 ScalarMappable 对象来生成颜色条
-            sm = ScalarMappable(cmap=cm.plasma)
-            sm.set_array([])  # 设置一个空数组，因为颜色映射实际上不需要数据
-
-            # 添加颜色条到图像
-            cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
-            cbar.set_label('Normalized Throughput')  # 设置颜色条的标签
+            plt.xlim(-(radius+50), radius+50)
+            plt.ylim(-(radius+50), radius+50)
 
             # 添加图例
-            ax.legend(handles=legend_elements, loc='upper right')
+            ax.legend(handles=legend_elements, loc='upper right', prop={'size': 12})
 
             if storage_flag == 1:  
                 fig_name = 'network_tropology.png'
-                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800, bbox_inches='tight')   
+                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800, bbox_inches='tight')
+
+            # # 保证生成的图像是正方形
+            # ax.set_aspect('equal')
+
+            # plt.xlabel('Distance (m)')
+            # plt.ylabel('Distance (m)')
+            # plt.xlim(-(radius+100), radius+100)
+            # plt.ylim(-(radius+100), radius+100)
+            
+            # plt.tick_params(axis='x', direction='in')  
+            # plt.tick_params(axis='y', direction='in')  
+            
+            # # 创建虚拟 ScalarMappable 对象来生成颜色条
+            # sm = ScalarMappable(cmap=cm.plasma)
+            # sm.set_array([])  # 设置一个空数组，因为颜色映射实际上不需要数据
+
+            # # 添加颜色条到图像
+            # cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+            # cbar.set_label('Normalized Throughput')  # 设置颜色条的标签
+
+            # # 添加图例
+            # ax.legend(handles=legend_elements, loc='upper right')
+
+            # if storage_flag == 1:  
+            #     fig_name = 'network_tropology.png'
+            #     plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800, bbox_inches='tight')   
 
         '''Simulation Results'''
         with open(self.result_file, 'w') as file:

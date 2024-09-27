@@ -82,7 +82,7 @@ radius_node_50_pdr_data = {
     'DALoRa-Balance': [90.91, 89.83, 88.30, 85.81],
     'DALoRa-PDR': [95.30, 92.14, 89.46, 86.70],
     'DALoRa-EE': [84.14, 80.89, 78.73, 79.07],
-    'DALoRa-Throughput': [89.91, 83.68, 74.99, 77.65]
+    'DALoRa-Throughput': [89.91, 83.68,  83.68, 77.65]
     
 }
 
