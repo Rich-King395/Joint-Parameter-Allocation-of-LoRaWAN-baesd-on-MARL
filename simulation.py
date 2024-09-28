@@ -211,7 +211,7 @@ class Simulation:
 
             if storage_flag == 1:  
                 fig_name = 'network_tropology.png'
-                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=1000, bbox_inches='tight')
+                plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
             # # 保证生成的图像是正方形
             # ax.set_aspect('equal')

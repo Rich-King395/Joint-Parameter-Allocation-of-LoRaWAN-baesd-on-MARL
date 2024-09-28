@@ -254,7 +254,7 @@ figure_folder_path = "/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-Lo
 if not os.path.exists(figure_folder_path):
         os.makedirs(figure_folder_path)
 fig_name = 'TropologyRadius_NetworkPDR_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=600, bbox_inches='tight')
 
 
 '''Network EE'''
@@ -283,7 +283,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkEE_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 '''Network Throughput'''
 plt.figure(figsize=(9, 9))  # 设置图形大小
@@ -310,7 +310,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkThropughput_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 '''Network Performance'''
@@ -339,7 +339,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkPerformance_line_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
 
 
 # '''Minimum Node PDR'''
