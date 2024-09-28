@@ -3,6 +3,7 @@ from matplotlib.font_manager import FontProperties
 import numpy as np
 import os
 
+
 def Net_Per_Index_Calculation(pdr_data, EE_data, Throughput_data):
     alpha = 1/3
     beta = 1/3
@@ -229,11 +230,11 @@ for i, (algo, pdr_values) in enumerate(radius_node_50_pdr_data.items()):
     else:
         plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.4, label=algo)
 
-plt.xlabel('Topology Radius (m)')
-plt.ylabel('Network PDR (%)')
+plt.xlabel('Topology Radius (m)', fontsize=14)
+plt.ylabel('Network PDR (%)', fontsize=14)
 # plt.title('Network PDR for Different LoRa Parameter Allocation Algorithms')
-plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
-plt.yticks(range(40, 101, 10))
+plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius, fontsize=12)
+plt.yticks(range(40, 101, 10), fontsize=12)
 plt.ylim(40, 100)
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
@@ -253,7 +254,7 @@ figure_folder_path = "/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-Lo
 if not os.path.exists(figure_folder_path):
         os.makedirs(figure_folder_path)
 fig_name = 'TropologyRadius_NetworkPDR_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
 
 
 '''Network EE'''
@@ -268,11 +269,11 @@ for i, (algo, pdr_values) in enumerate(radius_node_50_NetEE_data.items()):
     else:
         plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.2, label=algo)
 
-plt.xlabel('Topology Radius (m)')
-plt.ylabel('Network Energy Efficiency (bits/mJ)')
+plt.xlabel('Topology Radius (m)', fontsize=14)
+plt.ylabel('Network Energy Efficiency (bits/mJ)', fontsize=14)
 # plt.title('Network Energy Efficiency for Different LoRa Parameter Allocation Algorithms')
-plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
-plt.yticks(range(0, 131, 10))
+plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius, fontsize=12)
+plt.yticks(range(0, 131, 10), fontsize=12)
 plt.ylim(0, 130) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
@@ -282,7 +283,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkEE_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
 
 '''Network Throughput'''
 plt.figure(figsize=(9, 9))  # 设置图形大小
@@ -296,11 +297,11 @@ for i, (algo, pdr_values) in enumerate(radius_node_50_Throughput_data.items()):
     else:
         plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.2, label=algo)
 
-plt.xlabel('Topology Radius (m)')
-plt.ylabel('Network Throughput (bps)')
+plt.xlabel('Topology Radius (m)', fontsize=14)
+plt.ylabel('Network Throughput (bps)', fontsize=14)
 # plt.title('Network Throughput for Different LoRa Parameter Allocation Algorithms')
-plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius)
-plt.yticks(range(0, 901, 100))
+plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius, fontsize=12)
+plt.yticks(range(0, 901, 100), fontsize=12)
 plt.ylim(0, 900) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
@@ -309,7 +310,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkThropughput_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
 
 
 '''Network Performance'''
@@ -325,8 +326,8 @@ plt.figure(figsize=(12, 9))  # 设置图形大小
 for i, (label, values) in enumerate(radius_NetPer_data.items()):
     plt.plot(radius, values, linestyle='-', marker=makers[i], markersize=5, color=colors[i], label=label,  linewidth=0.8)
 
-plt.xlabel('Topology Radius (m)')
-plt.ylabel('Network Performance Index')
+plt.xlabel('Topology Radius (m)', fontsize=14)
+plt.ylabel('Network Performance Index', fontsize=14)
 # plt.title('Network Performance Index for Different LoRa Parameter Allocation Algorithms')
 plt.xticks(radius)
 plt.yticks([round(num, 3) for num in list(np.arange(0, 1.1, 0.10))])
@@ -338,7 +339,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'TropologyRadius_NetworkPerformance_line_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
 
 
 # '''Minimum Node PDR'''
@@ -386,7 +387,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'NumberofNodes_NetworkPDR_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
 
 '''Network EE'''
 plt.figure(figsize=(8, 6))  # 设置图形大小
@@ -407,7 +408,7 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
 fig_name = 'NumberofNodes_NetworkEE_bar_chart.png'
-plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=500, bbox_inches='tight')
+plt.savefig(os.path.join(figure_folder_path, fig_name), dpi=1000, bbox_inches='tight')
 
 
 '''Network Throughput'''

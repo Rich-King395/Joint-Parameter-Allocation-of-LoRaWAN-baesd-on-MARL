@@ -199,8 +199,10 @@ class Simulation:
                     legend_elements.append(Line2D([0], [0], marker='^', color='w', label='Gateway', markerfacecolor='red', markersize=16))
             
             """Network Tropology"""
-            plt.xlabel('Distance (m)')
-            plt.ylabel('Distance (m)')
+            plt.xlabel('Distance (m)', fontsize=14)
+            plt.ylabel('Distance (m)', fontsize=14)
+            plt.xticks(fontsize=12)
+            plt.yticks(fontsize=12)
             plt.xlim(-(radius+50), radius+50)
             plt.ylim(-(radius+50), radius+50)
 
