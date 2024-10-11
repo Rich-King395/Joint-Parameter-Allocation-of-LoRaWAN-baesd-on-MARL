@@ -277,8 +277,8 @@ plt.yticks(range(0, 131, 10), fontsize=12)
 plt.ylim(0, 130) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-# plt.legend(loc='upper center',bbox_to_anchor=(0.5, 1.05), ncol=8) 
-# plt.legend(fontsize='medium',loc='upper right')
+plt.legend(loc='upper center',bbox_to_anchor=(0.5, 1.05), ncol=8) 
+plt.legend(fontsize='medium',loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 
@@ -305,7 +305,7 @@ plt.yticks(range(0, 901, 100), fontsize=12)
 plt.ylim(0, 900) 
 plt.tick_params(axis='x', direction='in')  # x轴刻度线朝向图内
 plt.tick_params(axis='y', direction='in')  # y轴刻度线朝向图内
-# plt.legend(fontsize='medium',loc='upper right')
+plt.legend(fontsize='medium',loc='upper right')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
 plt.show()
 

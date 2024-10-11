@@ -197,6 +197,8 @@ class Simulation:
                 graphics_gateway(GW,ax)
                 if GW.id == 0:
                     legend_elements.append(Line2D([0], [0], marker='^', color='w', label='Gateway', markerfacecolor='red', markersize=16))
+
+            
             
             """Network Tropology"""
             plt.xlabel('Distance (m)', fontsize=14)
