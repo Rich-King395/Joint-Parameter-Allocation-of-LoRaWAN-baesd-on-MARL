@@ -80,10 +80,10 @@ radius_node_50_pdr_data = {
     'Round-Robin': [75.11, 62.51, 55.19, 51.21],
     'ADR': [80.41, 75.64, 70.22, 67.31],
     'RSLoRa': [66.62, 56.19,  49.33, 45.42],
-    'DALoRa-Balance': [90.91, 89.83, 88.30, 85.81],
-    'DALoRa-PDR': [95.30, 92.14, 89.46, 86.70],
-    'DALoRa-EE': [84.14, 80.89, 78.73, 79.07],
-    'DALoRa-TH': [89.91, 83.68,  83.68, 77.65]
+    'D-LoRa-Balance': [90.91, 89.83, 88.30, 85.81],
+    'D-LoRa-PDR': [95.30, 92.14, 89.46, 86.70],
+    'D-LoRa-EE': [84.14, 80.89, 78.73, 79.07],
+    'D-LoRa-TH': [89.91, 83.68,  83.68, 77.65]
     
 }
 
@@ -92,10 +92,10 @@ radius_node_50_NetEE_data = {
     'Round-Robin': [53.064, 44.16, 38.992, 36.176],
     'ADR': [47.816, 35.112, 27.0, 23.624],
     'RSLoRa': [110.464, 68.992, 49.912, 42.208],
-    'DALoRa-Balance': [84.216, 39.6, 22.328, 21.048],
-    'DALoRa-PDR': [25.673, 23.469, 21.318, 17.253],
-    'DALoRa-EE': [125.187, 50.790, 37.688, 23.146],
-    'DALoRa-TH': [36.688, 26.077, 17.466, 8.863]
+    'D-LoRa-Balance': [84.216, 39.6, 22.328, 21.048],
+    'D-LoRa-PDR': [25.673, 23.469, 21.318, 17.253],
+    'D-LoRa-EE': [125.187, 50.790, 37.688, 23.146],
+    'D-LoRa-TH': [36.688, 26.077, 17.466, 8.863]
     
 }
 
@@ -104,10 +104,10 @@ radius_node_50_Throughput_data = {
     'Round-Robin': [498.439, 414.796, 366.239, 339.808],
     'ADR': [869.959, 718.901, 590.566, 527.757],
     'RSLoRa': [418.612, 353.071, 309.995, 285.417],
-    'DALoRa-Balance': [573.615, 551.314, 490.888, 461.912],
-    'DALoRa-PDR': [617.031, 552.995, 535.476, 432.262],
-    'DALoRa-EE': [412.128, 357.050, 381.230, 347.664],
-    'DALoRa-TH': [887.723, 652.130, 428.261, 220.658]
+    'D-LoRa-Balance': [573.615, 551.314, 490.888, 461.912],
+    'D-LoRa-PDR': [617.031, 552.995, 535.476, 432.262],
+    'D-LoRa-EE': [412.128, 357.050, 381.230, 347.664],
+    'D-LoRa-TH': [887.723, 652.130, 428.261, 220.658]
 
 }
 
@@ -298,7 +298,7 @@ for i, (algo, pdr_values) in enumerate(radius_node_50_Throughput_data.items()):
         plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.2, label=algo)
 
 plt.xlabel('Topology Radius (m)', fontsize=14)
-plt.ylabel('Network Throughput (bps)', fontsize=14)
+plt.ylabel('Network TH (bps)', fontsize=14)
 # plt.title('Network Throughput for Different LoRa Parameter Allocation Algorithms')
 plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius, fontsize=12)
 plt.yticks(range(0, 901, 100), fontsize=12)
