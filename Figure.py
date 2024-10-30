@@ -231,7 +231,7 @@ for i, (algo, pdr_values) in enumerate(radius_node_50_pdr_data.items()):
         plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.4, label=algo)
 
 plt.xlabel('Topology Radius (m)', fontsize=14)
-plt.ylabel('Network PDR (%)', fontsize=14)
+plt.ylabel('Network Packet Delivery Rate (%)', fontsize=14)
 # plt.title('Network PDR for Different LoRa Parameter Allocation Algorithms')
 plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius, fontsize=12)
 plt.yticks(range(40, 101, 10), fontsize=12)
@@ -298,7 +298,7 @@ for i, (algo, pdr_values) in enumerate(radius_node_50_Throughput_data.items()):
         plt.bar([r + i * (bar_width + spacing) - offset + bar_width / 2 for r in radius], pdr_values, width=bar_width, color=colors[i], linewidth=0.2, label=algo)
 
 plt.xlabel('Topology Radius (m)', fontsize=14)
-plt.ylabel('Network TH (bps)', fontsize=14)
+plt.ylabel('Network Throughput (bps)', fontsize=14)
 # plt.title('Network Throughput for Different LoRa Parameter Allocation Algorithms')
 plt.xticks([r + (num_algorithms * bar_width + (num_algorithms - 1) * spacing) / 2 for r in radius], radius, fontsize=12)
 plt.yticks(range(0, 901, 100), fontsize=12)
