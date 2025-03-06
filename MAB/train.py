@@ -46,6 +46,7 @@ def MAB_train(nodes):
         ParameterConfig.packetsAtBS = [] 
         # Packets received by each GW
         ParameterConfig.packetsRecBS = [] 
+        
         # list of received packets
         ParameterConfig.recPackets = [] 
         # list of collided packets

@@ -6,6 +6,7 @@ import simpy
 import matplotlib.pyplot as plt
 import torch
 import random
+import math
 # turn on/off graphics
 graphics = 1
 
@@ -18,7 +19,7 @@ result_folder_path = "/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-Lo
 random_seed = 42
 
 # do the full collision check
-full_collision = False
+full_collision = True
 
 # RSSI global values for antenna
 dir_30 = 4
@@ -35,7 +36,17 @@ sf10 = np.array([10,-132,-128,-125])
 sf11 = np.array([11,-133,-130,-133])
 sf12 = np.array([12,-136,-133,-130])
 
-SF_SUM = float(7/(2^7)+8/(2^8)+9/(2^9)+10/(2^10)+11/(2^11)+12/(2^12))
+# 按接收灵敏度从低到高排序的SF+BW组合
+sf_bw_list = [
+    (0, 2), (1, 2), (2, 2), (0, 1),
+    (1, 1), (3, 2), (2, 1), (0, 0),
+    (3, 1), (4, 2), (1, 0), (4, 1),
+    (5, 2), (2, 0), (3, 0), (5, 1),
+    (4, 0), (5, 0)
+]
+num_sf_bw = len(sf_bw_list)
+
+SF_SUM = float(2^7+2^8+2^9+2^10+2^11+2^12)
 
 # receiver sensitivities of different SF and Bandwidth combinations
 sensi = np.array([sf7,sf8,sf9,sf10,sf11,sf12])
@@ -55,11 +66,13 @@ dis_range = np.array([sf7_dis,sf8_dis,sf9_dis,sf10_dis,sf11_dis,sf12_dis])
 SNR_Req = np.array([-7.5,-10,-12.5,-15,-17.5,-20])
 Bandwidth = np.array([125,250,500])
 SF = np.array([7,8,9,10,11,12])
+numSF = len(SF)
 
 BW_SUM = 125 + 250 + 500
 TP_SUM = 2 + 4 + 6 + 8 + 10 + 12 + 14
 
-Carrier_Frequency = np.array([470000,470100,470200,470300,470400,470500,470600,470700])
+Carrier_Frequency = np.array([868100,868300,868500,868700,868900,869100,869300,869500])
+numChannel = len(Carrier_Frequency)
 Transmission_Power = np.array([2,4,6,8,10,12,14])
 SF_BW = [[7,125],[7,250],[7,500],
          [8,125],[8,250],[8,500],
@@ -68,18 +81,24 @@ SF_BW = [[7,125],[7,250],[7,500],
          [11,125],[11,250],[11,500],
          [12,125],[12,250],[12,500]]
 
+# enable CASSI or not
+CASSI_flag = 1
+
 # adaptable LoRaWAN parameters to users
-nrNodes = 50
+nrNodes = 24
 nrBS = 1
-radius = 1000
+radius = 1500
 PayloadSize = 20
 avgSendTime = 4000
 allocation_type = "Local"
 #allocation_method = "ADR"
-allocation_method = "random"
+#allocation_method = "random"
 #allocation_method = "Round Robin"
 #allocation_method = "RS-LoRa"
 #allocation_method = "DALoRa"
+#allocation_method = "MACMAB"
+allocation_method = "ILCMAB"
+#allocation_method = "CoCMAB"
 
 nrNetworks = 1
 simtime = 1200000
@@ -98,10 +117,12 @@ env = simpy.Environment() # simulation environment
 
 # list of base stations
 bs = []
-# Packets sent to each GW
+# nodes sent to each GW
 packetsAtBS = [] 
-# Packets received by each GW
-packetsRecBS = [] 
+# Packets' sequence number received by each GW
+packetsRecBS = []
+# list of sent packets 
+sentPackets = [] 
 # list of received packets
 recPackets=[]
 # list of collided packets
@@ -207,6 +228,73 @@ class Q_table_Config:
     batch_size = 64
     num_episode = 4000
     experience_replay = False
+
+class CASSI_Config:
+    n_period = math.ceil( nrNodes / numChannel )
+    transmit_process = {}
+    nodes_transmit = []
+
+    rssi_measurements = [[[] for _ in range(numChannel)] for _ in range(nrNodes)]
+    Channel_RSSI = [] #用于储存按平均RSSI降序排序的信道列表
+    Node_RSSI = [] #用于储存按平均RSSI升序排序的节点列表
+
+    node_groups = [] # 排序分组后的节点，每组节点使用相同的信道
+
+    sf_bw_PDR_thres = 25
+
+    CF_time = 1200000
+    SF_BW_time = 1200000
+
+
+class MACMAB_Config:
+    channel_sf_count = [[0 for _ in range(numSF)] for _ in range(numChannel)] #记录不同信道上选择不同SF节点数量的二维数组
+    num_episode = 20000
+    eposide_duration = 800000 
+    eval_duration = 1200000
+
+    maximum_sf_bw_reward = 3           
+    maximum_sf_reward = 3 
+    maximum_tp_reward = 1.96
+
+    NetworkEnergyEfficiency = []
+    Network_PDR = []
+    Network_Throughput = []
+
+class CoCMAB_Config:
+    eposide_duration = 800000 
+    eval_duration = 1200000
+
+    CoAgents = []
+    joint_action_nodes = []
+    joint_actions = []
+
+    sf_train_flag = 0
+    intilial_flag = 0
+
+    sf_num_episode = 500
+    tp_num_episode = 2000 
+
+    maximum_sf_bw_reward = 3           
+    maximum_sf_reward = 2 
+    maximum_tp_reward = 1.96
+
+    NetworkEnergyEfficiency = []
+    Network_PDR = []
+    Network_Throughput = []
+
+class ILCMAB_Config:
+    num_episode = 20000 
+    eposide_duration = 800000 
+    eval_duration = 1200000
+
+    maximum_sf_bw_reward = 3           
+    maximum_sf_reward = 2 
+    maximum_tp_reward = 1.96
+
+    NetworkEnergyEfficiency = []
+    Network_PDR = []
+    Network_Throughput = []
+
 
 def EE_Jain_Fairness_Index(nodes):
     Suqare_of_Sum = 0

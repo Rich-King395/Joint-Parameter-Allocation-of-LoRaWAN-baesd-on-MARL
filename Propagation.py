@@ -14,7 +14,7 @@ def checkcollision(packet):
         for other in packetsAtBS[packet.bs]:
             if other.id != packet.nodeid: # nodes that donnot send this packet
                # simple collision
-               if frequencyCollision(packet, other.packet[packet.bs]) \
+                if frequencyCollision(packet, other.packet[packet.bs]) \
                    and sfCollision(packet, other.packet[packet.bs]):
                    if full_collision:
                        if timingCollision(packet, other.packet[packet.bs]):
@@ -43,16 +43,16 @@ def checkcollision(packet):
 #        |f1-f2| <= 60 kHz if f1 or f2 has bw 250 
 #        |f1-f2| <= 30 kHz if f1 or f2 has bw 125 
 def frequencyCollision(p1,p2):
-    if (abs(p1.fre-p2.fre)<=120 and (p1.bw==500 or p2.bw==500)):#Bandwodth=500kHz
-        return True
-    elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.bw==250)):#Bandwidth=250kHz
-        return True
-    else:
-        if (abs(p1.fre-p2.fre)<=30):
-            return True
-    
-    # if p1.fre == p2.fre:
+    # if (abs(p1.fre-p2.fre)<=120 and (p1.bw==500 or p2.bw==500)):#Bandwodth=500kHz
     #     return True
+    # elif (abs(p1.fre-p2.fre)<=60 and (p1.bw==250 or p2.bw==250)):#Bandwidth=250kHz
+    #     return True
+    # else:
+    #     if (abs(p1.fre-p2.fre)<=30):
+    #         return True
+    
+    if p1.fre == p2.fre:
+        return True
     return False
 
 # SF Collision
@@ -95,11 +95,15 @@ def timingCollision(p1, p2):
         return True
     return False
 
-def rssi(Ptx,distance):
+def rssi(packet,distance):
+    global Lpld0
+    Lpld0 += 14*(packet.fre - Carrier_Frequency[0])/(Carrier_Frequency[7] - Carrier_Frequency[0]) 
     Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
+    # Lpl = Lpld0+10*gamma*math.log10(distance/d0) 
+    Lpld0 = 128.95
     #  Lpl = Lpld0+10*gamma*math.log10(distance/d0)
     # print (Lpl)
-    Prx = Ptx + GL - Lpl
+    Prx = packet.tp + GL - Lpl
     return Prx, Lpl
 
 def snr(packet):
@@ -121,7 +125,7 @@ def snr(packet):
     return SNR_dB
     
 def checklost(packet,distance):
-    packet.RSSI, packet.Path_Loss = rssi(packet.tp,distance)
+    packet.RSSI, packet.Path_Loss = rssi(packet, distance)
     packet.SNR = snr(packet)
     # if packet.RSSI < packet.minisensi:
     # if packet.SNR < packet.miniSNR:

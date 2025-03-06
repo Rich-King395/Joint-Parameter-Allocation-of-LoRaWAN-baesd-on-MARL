@@ -9,6 +9,9 @@ import ParameterConfig
 from Packet import myPacket
 from Allocation import *
 from MAB.Agent import *
+from MACMAB_SF.Agent import *
+from ILCMAB_SF.Agent import *
+from CoCMAB.Agent import *
 
 class myNode:
     def __init__(self, id, x, y, period, myBS):
@@ -32,17 +35,21 @@ class myNode:
             elif MAB_Config.MAB_Variant == 1:
                 self.agent = DecayingEpsilonGreedy()
             elif MAB_Config.MAB_Variant == 2:
-                self.agent = UCB(MAB_Config.coef)
-
-            # self.agent = DecayingEpsilonGreedy() 
-            # self.agent = EpsilonGreedy(MAB_Config.epsilon)
-
-        # LoRa parameters the node used to send packets      
+                self.agent = UCB(MAB_Config.coef)       
+        elif allocation_method == "MACMAB":
+            self.agent = CUCB()
+        elif allocation_method == "ILCMAB":
+            self.agent = ILCUCB() 
+        elif allocation_method == "CoCMAB":
+            self.agent = CoCUCB() 
+            
+            
+        # LoRa parameters the node used to send packets
+        self.sf_bw_index = 0      
         self.sf_index = 0
         self.bw_index = 0
         self.fre_index = 0
         self.tp_index = 0
-        self.sf_bw_index = 0
 
         self.packet = []
         self.dist = []
@@ -52,6 +59,9 @@ class myNode:
 
         # number of packets sent by the node
         self.sent = 0
+        self.packetloss = 0
+        self.packetrec = 0
+
         self.powerlost = 0
         self.collided = 0
 
@@ -66,6 +76,10 @@ class myNode:
         self.EnergyEfficiency = 0 # energy efficiency of the node
         self.Throughput = 0 # throughput of the node
 
+        for i in range(0,nrBS):
+            d = get_distance(self.x,self.y,bs[i]) # distance between node and gateway
+            self.dist.append(d)
+
         if allocation_type == "Global":
             myNode.Generate_Packet(self)
     
@@ -73,39 +87,41 @@ class myNode:
     def Generate_Packet(self):
         self.packet = []
         for i in range(0,nrBS):
-            d = get_distance(self.x,self.y,bs[i]) # distance between node and gateway
-            self.dist.append(d)
+            # d = get_distance(self.x,self.y,bs[i]) # distance between node and gateway
+            # self.dist.append(d)
             if self.Generate_Packet_Flag == 0:
                 PacketPara = LoRaParameters()
                 self.Generate_Packet_Flag == 1
+          
             if allocation_method == "random":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = random_allocation()
+                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = random_allocation()
             elif allocation_method == "ADR":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
+                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
             elif allocation_method == "Round Robin":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = round_robin_allocation(self.id)
+                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = round_robin_allocation(self.id)
             elif allocation_method == "RS-LoRa":
-                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.last_path_loss)
+                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.last_path_loss)
             elif allocation_method == "MARL":                     
-                 PacketPara.sf = SF[self.agent.action[0]]
+                PacketPara.sf = SF[self.agent.action[0]]
             elif allocation_method == "DALoRa":
-                 self.sf_index,self.bw_index,self.fre_index,self.tp_index = self.agent.actions_choose()
-                 PacketPara.sf = SF[self.sf_index]
-                 PacketPara.bw = Bandwidth[self.bw_index]
-                 PacketPara.fre = Carrier_Frequency[self.fre_index]
-                 PacketPara.tp = Transmission_Power[self.tp_index]
-                 #PacketPara.tp = 14
+                self.sf_index,self.bw_index,self.fre_index,self.tp_index = self.agent.actions_choose()
+                PacketPara.sf = SF[self.sf_index]
+                PacketPara.bw = Bandwidth[self.bw_index]
+                PacketPara.fre = Carrier_Frequency[self.fre_index]
+                PacketPara.tp = Transmission_Power[self.tp_index]
+                #PacketPara.tp = 14
             elif allocation_method == "Q-table":
-                 self.sf_index,self.bw_index,self.fre_index = self.agent.actions_choose()
-                 PacketPara.sf = SF[self.sf_index]
-                 PacketPara.bw = Bandwidth[self.bw_index]
-                 PacketPara.fre = Carrier_Frequency[self.fre_index]
+                self.sf_index,self.bw_index,self.fre_index = self.agent.actions_choose()
+                PacketPara.sf = SF[self.sf_index]
+                PacketPara.bw = Bandwidth[self.bw_index]
+                PacketPara.fre = Carrier_Frequency[self.fre_index]
+                     
+
             packet = myPacket(self.id, PacketPara, i)
-            self.last_packet_rssi, self.last_path_loss = checklost(packet,self.dist[i])
+            # self.last_packet_rssi, self.last_path_loss = checklost(packet,self.dist[i])
             # if self.id == 0:
             #     print("last_packet_rssi", self.last_packet_rssi)
             self.packet.append(packet)
-            self.packets_interval.append(packet)
         # print('node %d' %id, "x", self.x, "y", self.y, "dist: ", self.dist, "my BS:", self.bs.id)
 
 #   directional antenna
@@ -213,10 +229,10 @@ def transmit(env,node):
             
             ParameterConfig.TotalPacketSize += node.packet[bs].PS
             ParameterConfig.TotalEnergyConsumption += node.packet[bs].tx_energy
-            ParameterConfig.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)            
-            
+            ParameterConfig.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)    
+
         # take first packet time on air   
-        yield env.timeout(node.packet[0].rectime)
+        yield env.timeout(node.packet[0].rectime)        
 
         # if packet did not collide, add it in list of received packets
         # unless it is already in
@@ -259,15 +275,10 @@ def transmit(env,node):
 
         if allocation_method == "DALoRa":
             for bs in range(0, nrBS):
-                # if node.packet[bs].lost == 1 or node.packet[bs].collided == 1:
-                #     if node.id == 0:
-                #         print("Packet lost or collided")
                 if node.packet[bs].lost == True:
                     node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
-                    # node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
                 elif node.packet[bs].collided == 1:
                     node.agent.rewards = [-1,-0.5,-0.5,0] # packet collided, negative reward
-                    # node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
                 else:
                     node.agent.rewards = [1,1,1,1] # successully received, positive reward
             # print(node.id)
@@ -298,11 +309,6 @@ def transmit(env,node):
             else:
                  node.agent.update_without_experience_replay(actions)
                 
-        # print('rec_interval:', node.rec_interval)
-        # print('recPackets_interval:', ParameterConfig.recPackets_interval)
-        # print('lost_interval:', node.lost_interval)
-        # print('lostPackets_interval:', ParameterConfig.lostPackets_interval)
-
         # complete packet has been received by base station
         # can remove it for next transmission
         for bs in range(0, nrBS):                    
@@ -311,6 +317,8 @@ def transmit(env,node):
                 # reset the packet
                 node.packet[bs].collided = 0
                 # node.packet[bs].processed = 0
+        
+        
 
 
 '''Graphics for node'''

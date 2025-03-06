@@ -8,7 +8,11 @@ from ParameterConfig import *
 import ParameterConfig
 from Gateway import myBS, graphics_gateway
 from Node import myNode, transmit, graphics_node
+from CAASI.CAASI_SF import CAASI_run
 from datetime import datetime
+from MACMAB_SF.train import MACMAB_run
+from ILCMAB_SF.train import ILCMAB_run
+from CoCMAB.train import CoCMAB_run
 from MAB.train import MAB_train
 class Simulation:
     def __init__(self):
@@ -43,6 +47,7 @@ class Simulation:
             packetsRecBS.append([])
 
         set_seed(random_seed)
+
         # generate node
         id = 0
         while len(nodes) < nrNodes*nrBS:
@@ -61,15 +66,29 @@ class Simulation:
                 
                 # when we add directionality, we update the RSSI here
                 if (directionality == 1):
-                    node.updateRSSI()
-                if allocation_method not in ["MARL", "DALoRa", "Q-table"]:
+                    node.updateRSSI()                
+                
+                if allocation_method not in ["MARL", "DALoRa", "Q-table", "MACMAB"]:
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
+
             id += 1
+        
+        if CASSI_flag == 1:
+            CAASI_run(nodes)        
         
         if allocation_method=="DALoRa":
             set_seed(random_seed)
             MAB_train(nodes)
+        elif allocation_method=="MACMAB":
+            set_seed(random_seed)
+            MACMAB_run(nodes)
+        elif allocation_method=="ILCMAB":
+            set_seed(random_seed)
+            ILCMAB_run(nodes)
+        elif allocation_method=="CoCMAB":
+            set_seed(random_seed)
+            CoCMAB_run(nodes)
         else:
         # traditional algorithms do not need training stage, start simulation until simtime
             set_seed(random_seed)

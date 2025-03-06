@@ -27,16 +27,17 @@ class myPacket:
         self.minisensi = myPacket.GetReceiveSensitivity(self.sf,self.bw)
         self.miniSNR = myPacket.GetMiniSNR(self.sf)
 
-        self.Path_Loss = 0
-        self.RSSI = 0
-        self.SNR = 0
+        self.RSSI, self.Path_Loss = rssi(self, nodes[nodeid].dist[0])
+        self.SNR = snr(self)
         
         self.rectime = myPacket.airtime(self.sf,self.cr,self.PS,self.bw)
         self.tx_energy = myPacket.calculate_energy(self.tp,self.rectime)
 
-        # if self.RSSI > self.minisensi and self.SNR > self.miniSNR:
-        # if self.RSSI > self.minisensi:
-        #      self.lost = False
+        if self.RSSI < self.minisensi:
+            self.lost = True
+
+        if self.SNR < self.miniSNR:
+            self.lost = True
 
     # this function computes the airtime of a packet
     # according to LoraDesignGuide_STD.pdf
