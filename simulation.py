@@ -10,10 +10,11 @@ from Gateway import myBS, graphics_gateway
 from Node import myNode, transmit, graphics_node
 from CAASI.CAASI_SF import CAASI_run
 from datetime import datetime
-from MACMAB_SF.train import MACMAB_run
-from ILCMAB_SF.train import ILCMAB_run
-from CoCMAB.train import CoCMAB_run
-from MAB.train import MAB_train
+from MACMAB.train import MACMAB_run
+from ILCMAB.train import ILCMAB_run
+from CoMAB.train import CoCMAB_run
+from MAConMAB.train import MAConMAB_run
+from MAB.train import MAB_run
 class Simulation:
     def __init__(self):
         self.sum = 0
@@ -37,6 +38,7 @@ class Simulation:
         
         ParameterConfig.result_folder_path, self.result_file = result_file()
 
+    
     def run(self):
         # generate BS
         for i in range(0,nrBS):
@@ -53,8 +55,12 @@ class Simulation:
         while len(nodes) < nrNodes*nrBS:
             # myNode takes period (in ms), base station id packetlen (in Bytes)
             # 1000000 = 16 min
-            x = random.randint(-radius, radius)
-            y = random.randint(-radius, radius)
+            if nrNodes == 1:
+                x = radius
+                y = 0
+            else:
+                x = random.randint(-radius, radius)
+                y = random.randint(-radius, radius)
             # make sure the nodes are inside the circle
             if (x ** 2 + y ** 2) > (radius ** 2):
                 continue
@@ -68,31 +74,44 @@ class Simulation:
                 if (directionality == 1):
                     node.updateRSSI()                
                 
-                if allocation_method not in ["MARL", "DALoRa", "Q-table", "MACMAB"]:
+                if allocation_method not in ["MARL", "DALoRa", "Q-table", "MACMAB","MAConMAB","ILCMAB","CoMAB"]:
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
 
             id += 1
-        
-        if CASSI_flag == 1:
-            CAASI_run(nodes)        
+
+        if ParameterConfig.CASSI_flag == 1:
+            CAASI_run(nodes)   
+
+        # ParameterConfig.packetsAtBS=[]
+         
         
         if allocation_method=="DALoRa":
             set_seed(random_seed)
-            MAB_train(nodes)
+            MAB_run(nodes)
         elif allocation_method=="MACMAB":
             set_seed(random_seed)
             MACMAB_run(nodes)
         elif allocation_method=="ILCMAB":
             set_seed(random_seed)
             ILCMAB_run(nodes)
-        elif allocation_method=="CoCMAB":
+        elif allocation_method=="CoMAB":
             set_seed(random_seed)
             CoCMAB_run(nodes)
+        elif allocation_method=="MAConMAB":
+            set_seed(random_seed)
+            MAConMAB_run(nodes)
         else:
         # traditional algorithms do not need training stage, start simulation until simtime
             set_seed(random_seed)
             env.run(until=simtime)
+
+            for node in nodes:
+                # print("node.id:",node.id,"SF:",SF[node.sf_index])
+                sf_distribute[node.sf_index] += 1
+                tp_distribute[node.tp_index] += 1
+                fre_distribute[node.fre_index] += 1
+
 
         # store nodes and basestation locations
         if storage_flag == 1:  
@@ -315,6 +334,13 @@ class Simulation:
             file.write("EE Jain's fairness index: {:.3f}".format(self.EEJainFairness))
             file.write("Throughput Jain's fairness index:  {:.3e}".format(self.ThroughputJainFairness))
             file.write("Throughput Varance:  {:.3f}".format(self.ThroughputVariance))
+            file.write('--------Parameter Distribution--------\n')
+            for i, count in enumerate(sf_distribute):
+                file.write('SF={} -> {}\n'.format(7 + i, count))  # SF starts from 7
+            for i, count in enumerate(fre_distribute):
+                file.write('Freq={} kHz -> {}\n'.format(Carrier_Frequency[i], count))
+            for i, count in enumerate(tp_distribute):
+                file.write('TP={} dBm -> {}\n'.format(Transmission_Power[i], count))
 
 def result_file():
      baseline_folder_path = '/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL' 

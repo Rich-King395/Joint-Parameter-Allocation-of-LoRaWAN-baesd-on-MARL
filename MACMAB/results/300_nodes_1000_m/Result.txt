@@ -1,0 +1,18 @@
+--------Parameter Setting--------
+Nodes per base station: 300
+Packet generation interval: 4000 ms
+LoRa parameters allocation type: Local
+LoRa parameters allocation method: MACMAB
+Simulation duration: 0 h
+Number of gateways: 1
+Collision check mode: Full Collision Check
+Antenna type: Directional antenna
+Number of networks: 1
+Network topology radius: 1000 m
+Packet payload size: 20
+
+--------Simulation Results--------
+Results after SF allocation before power control:
+PDR=95.821 %,Network EE=7.852 bits/mJ
+Results after power control:
+PDR=88.009 %,Network EE=26.950 bits/mJ

@@ -36,7 +36,8 @@ if __name__ == "__main__":
     simulation.simstarttime = datetime.now()
     simulation.run()
     simulation.simendtime = datetime.now()
-    if allocation_method != "MARL" and allocation_method != "DALoRa":
+
+    if allocation_method not in ["MARL", "DALoRa", "Q-table", "MACMAB","MAConMAB","ILCMAB","CoMAB"]:
         simulation.results_calculation()         
         simulation.results_show()
         simulation.simulation_record()

@@ -9,9 +9,10 @@ import ParameterConfig
 from Packet import myPacket
 from Allocation import *
 from MAB.Agent import *
-from MACMAB_SF.Agent import *
-from ILCMAB_SF.Agent import *
-from CoCMAB.Agent import *
+from MACMAB.Agent import *
+from ILCMAB.Agent import *
+from CoMAB.Agent import *
+from MAConMAB.Agent import *
 
 class myNode:
     def __init__(self, id, x, y, period, myBS):
@@ -40,10 +41,13 @@ class myNode:
             self.agent = CUCB()
         elif allocation_method == "ILCMAB":
             self.agent = ILCUCB() 
-        elif allocation_method == "CoCMAB":
+        elif allocation_method == "CoMAB":
             self.agent = CoCUCB() 
+        elif allocation_method == "MAConMAB":
+            self.agent = LinUCB() 
             
-            
+        self.PacketPara = LoRaParameters()
+         
         # LoRa parameters the node used to send packets
         self.sf_bw_index = 0      
         self.sf_index = 0
@@ -94,19 +98,34 @@ class myNode:
                 self.Generate_Packet_Flag == 1
           
             if allocation_method == "random":
-                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = random_allocation()
+                self.sf_index,self.fre_index, self.bw_index, self.tp_index = random_allocation()
+                PacketPara.sf = SF[self.sf_index]
+                PacketPara.bw = 125
+                PacketPara.fre = Carrier_Frequency[self.fre_index]
+                PacketPara.tp = Transmission_Power[self.tp_index]
+            if allocation_method == "uniform":
+                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = uniform_allocation()
             elif allocation_method == "ADR":
                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
             elif allocation_method == "Round Robin":
-                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = round_robin_allocation(self.id)
+                self.sf_index,self.fre_index, self.bw_index, self.tp_index = round_robin_allocation(self.id)
+                PacketPara.sf = SF[self.sf_index]
+                PacketPara.bw = 125
+                PacketPara.fre = Carrier_Frequency[self.fre_index]
+                PacketPara.tp = Transmission_Power[self.tp_index]
             elif allocation_method == "RS-LoRa":
                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.last_path_loss)
             elif allocation_method == "MARL":                     
                 PacketPara.sf = SF[self.agent.action[0]]
             elif allocation_method == "DALoRa":
-                self.sf_index,self.bw_index,self.fre_index,self.tp_index = self.agent.actions_choose()
+                if MAB_Config.initialize_flag == 1:
+                    self.sf_index = random.choice([0, 1, 2, 3, 4, 5])  
+                    self.fre_index = random.choice([0, 1, 2, 3, 4, 5, 6, 7])  
+                    self.tp_index = random.choice([0, 1, 2, 3, 4, 5, 6])
+                else:
+                    self.sf_index,self.fre_index,self.tp_index = self.agent.actions_choose()
                 PacketPara.sf = SF[self.sf_index]
-                PacketPara.bw = Bandwidth[self.bw_index]
+                PacketPara.bw = 125
                 PacketPara.fre = Carrier_Frequency[self.fre_index]
                 PacketPara.tp = Transmission_Power[self.tp_index]
                 #PacketPara.tp = 14
@@ -115,8 +134,12 @@ class myNode:
                 PacketPara.sf = SF[self.sf_index]
                 PacketPara.bw = Bandwidth[self.bw_index]
                 PacketPara.fre = Carrier_Frequency[self.fre_index]
-                     
-
+            # elif allocation_method == "MAConMAB":
+            #     PacketPara.sf = SF[self.sf_index]
+            #     PacketPara.bw = Bandwidth[self.bw_index]
+            #     PacketPara.fre = Carrier_Frequency[self.fre_index]
+            #     PacketPara.tp = Transmission_Power[self.tp_index]
+            
             packet = myPacket(self.id, PacketPara, i)
             # self.last_packet_rssi, self.last_path_loss = checklost(packet,self.dist[i])
             # if self.id == 0:
@@ -227,9 +250,12 @@ def transmit(env,node):
             node.EnergyConsumption += node.packet[bs].tx_energy
             node.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)    
             
+            ParameterConfig.sentPackets.append(node.packet[bs].seqNr) 
             ParameterConfig.TotalPacketSize += node.packet[bs].PS
             ParameterConfig.TotalEnergyConsumption += node.packet[bs].tx_energy
             ParameterConfig.TotalPacketAirtime += float(node.packet[bs].rectime / 1000)    
+
+        #print("packetsAtBS:",len(packetsAtBS[0]))
 
         # take first packet time on air   
         yield env.timeout(node.packet[0].rectime)        
@@ -247,25 +273,31 @@ def transmit(env,node):
                         packetsRecBS[bs].append(node.packet[bs].seqNr)
                         # print("num of packets received by bs",bs,"is",len(packetsRecBS[bs]))
                         node.rec_interval += 1
+                        node.packetrec += 1
                         ParameterConfig.recPackets_interval += 1
+                        ParameterConfig.recPackets.append(node.packet[bs].seqNr)
+                        # print("num of total received packets",len(ParameterConfig.recPackets))      
+                        ParameterConfig.RecPacketSize += node.packet[bs].PS
+                        node.RecPacketSize += node.packet[bs].PS
                     else:
                         # now need to check for right BS
                         if (node.bs.id == bs):
                             packetsRecBS[bs].append(node.packet[bs].seqNr)
                             node.rec_interval += 1
+                            node.packetrec += 1
                             ParameterConfig.recPackets_interval += 1
                     # recPackets is a global list of received packets
-                    # not updated for multiple networks        
-                    if (ParameterConfig.recPackets):
-                        if (ParameterConfig.recPackets[-1] != node.packet[bs].seqNr):
-                            ParameterConfig.recPackets.append(node.packet[bs].seqNr)
-                            # print("num of total received packets",len(ParameterConfig.recPackets))      
-                            ParameterConfig.RecPacketSize += node.packet[bs].PS
-                            node.RecPacketSize += node.packet[bs].PS
-                    else:
-                        ParameterConfig.recPackets.append(node.packet[bs].seqNr)
-                        ParameterConfig.RecPacketSize += node.packet[bs].PS
-                        node.RecPacketSize += node.packet[bs].PS
+                    # # not updated for multiple networks        
+                    # if (ParameterConfig.recPackets):
+                    #     if (ParameterConfig.recPackets[-1] != node.packet[bs].seqNr):
+                    #         ParameterConfig.recPackets.append(node.packet[bs].seqNr)
+                    #         # print("num of total received packets",len(ParameterConfig.recPackets))      
+                    #         ParameterConfig.RecPacketSize += node.packet[bs].PS
+                    #         node.RecPacketSize += node.packet[bs].PS
+                    # else:
+                    #     ParameterConfig.recPackets.append(node.packet[bs].seqNr)
+                    #     ParameterConfig.RecPacketSize += node.packet[bs].PS
+                    #     node.RecPacketSize += node.packet[bs].PS
                 else:
                     ParameterConfig.collidedPackets.append(node.packet[bs].seqNr)
                     node.lost_interval += 1
@@ -276,15 +308,17 @@ def transmit(env,node):
         if allocation_method == "DALoRa":
             for bs in range(0, nrBS):
                 if node.packet[bs].lost == True:
-                    node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
+                    # node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
+                    node.agent.rewards = [-1,-1,-1,-1] # packet loss, negative reward
                 elif node.packet[bs].collided == 1:
-                    node.agent.rewards = [-1,-0.5,-0.5,0] # packet collided, negative reward
+                    # node.agent.rewards = [-1,-0.5,-0.5,0] # packet collided, negative reward
+                    node.agent.rewards = [-1,-1,-1,-1] # packet collided, negative reward
                 else:
                     node.agent.rewards = [1,1,1,1] # successully received, positive reward
             # print(node.id)
             # print(node.agent.reward)
             node.agent.cumulative_reward_SF += node.agent.rewards[0]
-            node.agent.cumulative_reward_BW += node.agent.rewards[1]
+            # node.agent.cumulative_reward_BW += node.agent.rewards[1]
             node.agent.cumulative_reward_Fre += node.agent.rewards[2]
             node.agent.cumulative_reward_TP += node.agent.rewards[3]
             node.agent.Expected_Reward_Update(node.sf_index, node.bw_index, node.fre_index, node.tp_index)
@@ -308,7 +342,28 @@ def transmit(env,node):
                 node.agent.update_with_experience_replay()
             else:
                  node.agent.update_without_experience_replay(actions)
-                
+
+        if allocation_method == "ILCMAB":
+            for bs in range(0, nrBS):
+                if node.packet[bs].lost == True or node.packet[bs].collided == 1: 
+                    '''数据包丢失给负奖励'''
+                    node.agent.reward_SF = -1 # SF基础臂的奖励
+                    # reward_towards_EE = 1 - float(Transmission_Power[node.tp_index]/TP_SUM)
+                    # node.agent.reward_TP = -1 + reward_towards_EE # TP基础臂的奖励
+                    node.agent.reward_TP = -1 # TP基础臂的奖励
+                else: 
+                    '''数据包被成功接收给正奖励'''
+                    # reward_towards_small_SF = 1 - float((2^(SF[node.sf_index]))/SF_SUM)
+                    # node.agent.reward_SF = 1 + reward_towards_small_SF # SF基础臂的奖励
+                    node.agent.reward_SF = 1
+                    
+                    # reward_towards_EE = 1 - float(Transmission_Power[node.tp_index]/Transmission_Power[6])
+                    # node.agent.reward_TP = 1 + reward_towards_EE # TP基础臂的奖励
+                    node.agent.reward_TP = 1 # TP基础臂的奖励
+        
+            node.agent.Expected_Reward_Update(node.sf_index, node.tp_index)
+
+
         # complete packet has been received by base station
         # can remove it for next transmission
         for bs in range(0, nrBS):                    

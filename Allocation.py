@@ -5,11 +5,23 @@ from ParameterConfig import *
 import numpy as np
 
 def random_allocation():
-    sf = random.randint(7,12)
-    bw = random.choice([125,250,500])
-    fre = random.choice(Carrier_Frequency)
-    # tp = 14
-    tp = random.choice(Transmission_Power)
+    sf = random.randint(0,5)
+    fre = random.randint(0,7)
+    # sf = 7
+    # fre = 868100
+    bw = 0
+    tp = 6
+    # tp = random.choice(Transmission_Power)
+    # bw = random.choice([125,250,500])
+    return sf,fre,bw,tp
+
+def uniform_allocation():
+    sf = 7
+    fre = 868100
+    bw = 125
+    tp = 14
+    # tp = random.choice(Transmission_Power)
+    # bw = random.choice([125,250,500])
     return sf,bw,fre,tp
 
 #choose the closest SF and bw config according to distance between node and gateway and receive sensitivity
@@ -29,13 +41,12 @@ def closest_allocation(distance):
 def round_robin_allocation(id):
     nodeid = id
     nodeid = nodeid % 48
-    sf = (nodeid // 8) + 7
-    fre_index = nodeid % 8
-    fre = Carrier_Frequency[fre_index]
-    bw = random.choice([125,250,500])
-    tp = random.choice(Transmission_Power)
+    sf = nodeid // 8
+    fre = nodeid % 8
+    bw = 0
+    tp = 6
     # tp = 14
-    return sf,bw,fre,tp
+    return sf,fre,bw,tp
     # nodeid = id
     # nodeid = nodeid % 6
     # sf = SF[nodeid]
@@ -63,7 +74,7 @@ def ADR(PacketPara,last_packet_rssi,ADR_flag,id):
         
 
         sf = random.randint(7,12)
-        bw = random.choice([125,250,500])
+        bw = 125
         tp = random.choice(Transmission_Power)
         # find the indexes for the positive margins
         positive_indexes_margins = [(idx,margin) for idx, margin in enumerate(margins) if margin > 0]
@@ -88,10 +99,10 @@ def ADR(PacketPara,last_packet_rssi,ADR_flag,id):
     fre = random.choice(Carrier_Frequency)
     return sf,bw,fre,tp
 
-probabilities = [float((7/(2^7))/(SF_SUM)), float((8/(2^8))/(SF_SUM)),float((9/(2^9))/(SF_SUM)),float((10/(2^10))/(SF_SUM)),float((11/(2^11))/(SF_SUM)),float((12/(2^12))/(SF_SUM))]
+probabilities = [float((7/(2^7))/(sf_sum)), float((8/(2^8))/(sf_sum)),float((9/(2^9))/(sf_sum)),float((10/(2^10))/(sf_sum)),float((11/(2^11))/(sf_sum)),float((12/(2^12))/(sf_sum))]
 
 def RS_LoRa(Path_Loss):
-    bw = random.choice([125,250,500])
+    bw = 125
     fre = random.choice(Carrier_Frequency)
     sf = np.random.choice(SF, p=probabilities)
 

@@ -1,21 +1,26 @@
 # check for collisions at base station
 # Note: called before a packet (or rather node) is inserted into the list
 import math
+import ParameterConfig
 from ParameterConfig import *
 
 # check for collisions at base station
 # Note: called before a packet (or rather node) is inserted into the list
 def checkcollision(packet):
+    # global packetsAtBS
+    # print("packetsAtBS:",len(packetsAtBS))
     col = 0 # flag needed since there might be several collisions for packet
     # lost packets don't collide
     if packet.lost:
        return 0
     if packetsAtBS[packet.bs]:
+        # print("同时有多个节点向同一个网关传输")
         for other in packetsAtBS[packet.bs]:
             if other.id != packet.nodeid: # nodes that donnot send this packet
                # simple collision
                 if frequencyCollision(packet, other.packet[packet.bs]) \
                    and sfCollision(packet, other.packet[packet.bs]):
+                #if sfCollision(packet, other.packet[packet.bs]):
                    if full_collision:
                        if timingCollision(packet, other.packet[packet.bs]):
                            # check who collides in the power domain
@@ -36,7 +41,6 @@ def checkcollision(packet):
         return col
     return 0
 
-# 
 # frequencyCollision, conditions
 # 120kHz,60kHz,30kHz are the minimum tlerable frequency offsets
 #        |f1-f2| <= 120 kHz if f1 or f2 has bw 500 
