@@ -1,6 +1,6 @@
 import sys
 from ParameterConfig import *
-from simulation import Simulation
+from simulation import *
 from datetime import datetime
 
 if __name__ == "__main__":
@@ -35,9 +35,10 @@ if __name__ == "__main__":
     simulation = Simulation()
     simulation.simstarttime = datetime.now()
     simulation.run()
+    ParameterConfig.result_folder_path, simulation.result_file = result_file()
     simulation.simendtime = datetime.now()
 
-    if allocation_method not in ["MARL", "DALoRa", "Q-table", "MACMAB","MAConMAB","ILCMAB","CoMAB"]:
+    if allocation_method not in ["MARL", "DLoRa", "Q-table", "MACMAB","MAConMAB","CDLoRa","CoMAB","MIXMAB","NaiveMAB","EFLoRa","ADR"]:
         simulation.results_calculation()         
         simulation.results_show()
         simulation.simulation_record()

@@ -8,11 +8,14 @@ from ParameterConfig import *
 import ParameterConfig
 from Packet import myPacket
 from Allocation import *
-from MAB.Agent import *
+from DLoRa.Agent import *
 from MACMAB.Agent import *
-from ILCMAB.Agent import *
+from CDLoRa.Agent import *
 from CoMAB.Agent import *
 from MAConMAB.Agent import *
+from LIWEX.Agent import *
+from MIXMAB.Agent import *
+from NaiveMAB.Agent import *
 
 class myNode:
     def __init__(self, id, x, y, period, myBS):
@@ -30,21 +33,27 @@ class myNode:
 
         self.last_path_loss = 0 # the path loss of the last packet sent by the node
 
-        if allocation_method == "DALoRa":
-            if MAB_Config.MAB_Variant == 0:
+        if allocation_method == "DLoRa":
+            if DLoRa_Config.DLoRa_Variant == 0:
                 self.agent = EpsilonGreedy()
-            elif MAB_Config.MAB_Variant == 1:
+            elif DLoRa_Config.DLoRa_Variant == 1:
                 self.agent = DecayingEpsilonGreedy()
-            elif MAB_Config.MAB_Variant == 2:
-                self.agent = UCB(MAB_Config.coef)       
+            elif DLoRa_Config.DLoRa_Variant == 2:
+                self.agent = UCB(DLoRa_Config.coef)       
         elif allocation_method == "MACMAB":
             self.agent = CUCB()
-        elif allocation_method == "ILCMAB":
-            self.agent = ILCUCB() 
+        elif allocation_method == "CDLoRa":
+            self.agent = CUCB() 
         elif allocation_method == "CoMAB":
             self.agent = CoCUCB() 
         elif allocation_method == "MAConMAB":
             self.agent = LinUCB() 
+        elif allocation_method == "LIWEX":
+            self.agent = LIWEX() 
+        elif allocation_method == "MIXMAB":
+            self.agent = MIXMAB() 
+        elif allocation_method == "NaiveMAB":
+            self.agent = NaiveMAB() 
             
         self.PacketPara = LoRaParameters()
          
@@ -54,6 +63,7 @@ class myNode:
         self.bw_index = 0
         self.fre_index = 0
         self.tp_index = 0
+        self.arm_index = 0
 
         self.packet = []
         self.dist = []
@@ -105,8 +115,10 @@ class myNode:
                 PacketPara.tp = Transmission_Power[self.tp_index]
             if allocation_method == "uniform":
                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = uniform_allocation()
-            elif allocation_method == "ADR":
-                PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
+            # elif allocation_method == "ADR":
+            #     PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = ADR(PacketPara,self.last_packet_rssi,self.ADR_flag,self.id)
+            #     self.sf_index = np.where(SF == PacketPara.sf)[0][0]
+            #     self.tp_index = np.where(Transmission_Power == PacketPara.tp)[0][0]
             elif allocation_method == "Round Robin":
                 self.sf_index,self.fre_index, self.bw_index, self.tp_index = round_robin_allocation(self.id)
                 PacketPara.sf = SF[self.sf_index]
@@ -115,10 +127,12 @@ class myNode:
                 PacketPara.tp = Transmission_Power[self.tp_index]
             elif allocation_method == "RS-LoRa":
                 PacketPara.sf,PacketPara.bw,PacketPara.fre,PacketPara.tp = RS_LoRa(self.last_path_loss)
+                self.sf_index = np.where(SF == PacketPara.sf)[0][0]
+                self.tp_index = np.where(Transmission_Power == PacketPara.tp)[0][0]
             elif allocation_method == "MARL":                     
                 PacketPara.sf = SF[self.agent.action[0]]
-            elif allocation_method == "DALoRa":
-                if MAB_Config.initialize_flag == 1:
+            elif allocation_method == "DLoRa":
+                if DLoRa_Config.initialize_flag == 1:
                     self.sf_index = random.choice([0, 1, 2, 3, 4, 5])  
                     self.fre_index = random.choice([0, 1, 2, 3, 4, 5, 6, 7])  
                     self.tp_index = random.choice([0, 1, 2, 3, 4, 5, 6])
@@ -305,7 +319,7 @@ def transmit(env,node):
             # print("num of total received packets",len(ParameterConfig.recPackets))
         
 
-        if allocation_method == "DALoRa":
+        if allocation_method == "DLoRa":
             for bs in range(0, nrBS):
                 if node.packet[bs].lost == True:
                     # node.agent.rewards = [-0.5,-0.5,0,-1] # packet loss, negative reward
@@ -343,7 +357,7 @@ def transmit(env,node):
             else:
                  node.agent.update_without_experience_replay(actions)
 
-        if allocation_method == "ILCMAB":
+        if allocation_method == "CDLoRa":
             for bs in range(0, nrBS):
                 if node.packet[bs].lost == True or node.packet[bs].collided == 1: 
                     '''数据包丢失给负奖励'''

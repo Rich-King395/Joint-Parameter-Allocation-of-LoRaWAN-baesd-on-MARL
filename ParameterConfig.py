@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import torch
 import random
 import math
+import itertools
+
 # turn on/off graphics
 graphics = 1
 
@@ -46,6 +48,7 @@ sf_bw_list = [
 ]
 num_sf_bw = len(sf_bw_list)
 
+ToA = np.array([97.536,174.592,328.704,616.448,1150.976,2138.112])
 SF_SUM = float(2^7+2^8+2^9+2^10+2^11+2^12)
 sf_sum = float(7/(2^7)+8/(2^8)+9/(2^9)+10/(2^10)+11/(2^11)+12/(2^12))
 # receiver sensitivities of different SF and Bandwidth combinations
@@ -81,33 +84,45 @@ SF_BW = [[7,125],[7,250],[7,500],
          [11,125],[11,250],[11,500],
          [12,125],[12,250],[12,500]]
 
+All_Parameter_Configurations = itertools.product(Carrier_Frequency, SF, Transmission_Power)
+Parameter_Configurations = list(All_Parameter_Configurations) # 336 configurations
+
 sf_distribute = [0 for i in range(numSF)]
 tp_distribute = [0 for i in range(len(Transmission_Power))]
 fre_distribute = [0 for i in range(numChannel)]
 
 # enable CASSI or not
-CASSI_flag = 1
+CAASI_flag = 1
+
+# 0 for homogeneous channel and 1 for heterogeneous channel
+Channel_flag = 0
 
 # adaptable LoRaWAN parameters to users
-nrNodes = 100
+nrNodes = 200
 nrBS = 1
 radius = 1000
 PayloadSize = 50
 avgSendTime = 20000
 allocation_type = "Local"
-#allocation_method = "ADR"
+allocation_method = "ADR"
 #allocation_method = "random"
 #allocation_method = "uniform"
-#llocation_method = "Round Robin"
+#allocation_method = "Round Robin"
 #allocation_method = "RS-LoRa"
-#allocation_method = "DALoRa"
+#allocation_method = "DLoRa"
 #allocation_method = "MACMAB"
-allocation_method = "ILCMAB"
+#allocation_method = "CDLoRa"
 #allocation_method = "CoMAB"
 #allocation_method = "MAConMAB"
+#allocation_method = "LIWEX"
+#allocation_method = "MIXMAB"
+#allocation_method = "NaiveMAB"
+#allocation_method = "EFLoRa"
+
+global_episode = 0
 
 nrNetworks = 1
-simtime = 7200000
+simtime = 12000000
 directionality = 1
 full_collision = True
 
@@ -198,8 +213,8 @@ class MAA2C_Config:
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     random_seed = 3
 
-class MAB_Config:
-    MAB_Variant = 2 # 0: epsilon-greedy, 1: decaying-greedy, 2: UCB
+class DLoRa_Config:
+    DLoRa_Variant = 2 # 0: epsilon-greedy, 1: decaying-greedy, 2: UCB
     
     coef = 2 # coefficient of UCB
     epsilon = 0.05
@@ -208,10 +223,10 @@ class MAB_Config:
     initialize_flag = 1
 
     initialize_duration = 12000000
-    eposide_duration = 2000000 
+    eposide_duration = 1800000 
     eval_duration = 12000000
 
-    num_episode = 10
+    num_episode = 4000
 
     average_cumulative_reward = []
 
@@ -235,8 +250,7 @@ class MAB_Config:
     NetThroughput = 0
     NetEnergyEfficiency = 0
 
-    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/MAConMAB"
-
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/DLoRa/results"
 
 class Q_table_Config:
     alpha = 0.1 # learning rate
@@ -266,7 +280,6 @@ class CASSI_Config:
     CF_time = 1200000
     SF_BW_time = 1200000
 
-
 class MACMAB_Config:
     eposide_duration = 200000 
     tp_duration = 1200000
@@ -289,7 +302,6 @@ class MACMAB_Config:
     NetEnergyEfficiency = 0
 
     result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/MACMAB/results"
-
 
 class CoCMAB_Config:
     eposide_duration = 200000 
@@ -315,7 +327,6 @@ class CoCMAB_Config:
     Network_PDR = []
     Network_Throughput = []
 
-
 class MAConMAB_Config:
     contexts = [np.array([0, 0, 0, 0, 0, 0]) for _ in range(numChannel)] # 初始化上下文向量
     eposide_duration = 2000000 
@@ -338,14 +349,94 @@ class MAConMAB_Config:
 
     result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/MAConMAB/results"
 
-class ILCMAB_Config:
-    eposide_duration = 2000000 
+class CDLoRa_Config:
+    eposide_duration = 1800000 
     eval_duration = 12000000
 
     num_episode = 4000
         
     maximum_sf_reward = 2
     maximum_tp_reward = 2
+
+    NetworkEnergyEfficiency = [] 
+    Network_PDR = []
+    Network_Throughput = []
+
+    NetPDR = 0
+    NetThroughput = 0
+    NetEnergyEfficiency = 0
+
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/CDLoRa/results"
+
+class NaiveMAB_Config:
+    eposide_duration = 1800000 
+    eval_duration = 12000000
+
+    num_episode = 4000
+        
+    maximum_sf_reward = 2
+    maximum_tp_reward = 2
+
+    NetworkEnergyEfficiency = [] 
+    Network_PDR = []
+    Network_Throughput = []
+
+    NetPDR = 0
+    NetThroughput = 0
+    NetEnergyEfficiency = 0
+
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/NaiveMAB/results"
+
+class LIWEX_Config:
+    Sum_ToA = np.sum(ToA)
+    W_sf = Sum_ToA / ToA 
+    W_sf *= 0.01
+
+    N_TP = len(Transmission_Power)
+    W_tp = np.zeros(N_TP) # Initialize an array for weights
+    for j in range(1, N_TP + 1): # j runs from 1 to N_TP
+        weight = math.ceil(1 - j / N_TP)
+        # Store the weight. Note: array index is j-1 because Python uses 0-based indexing
+        W_tp[j-1] = weight 
+
+    W_m = W_sf[:, np.newaxis] * W_tp
+
+    eposide_duration = 2000000 
+    eval_duration = 12000000
+
+    num_episode = 2000
+        
+    NetworkEnergyEfficiency = []
+    Network_PDR = []
+    Network_Throughput = []
+
+    NetPDR = 0
+    NetThroughput = 0
+    NetEnergyEfficiency = 0
+
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/LIWEX/results"
+
+class MIXMAB_Config:
+    eposide_duration = 1800000  
+    eval_duration = 12000000
+
+    num_episode = 4000
+        
+    NetworkEnergyEfficiency = []
+    Network_PDR = []
+    Network_Throughput = []
+
+    NetPDR = 0
+    NetThroughput = 0
+    NetEnergyEfficiency = 0
+
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/MIXMAB/results"
+
+class EFLoRa_Config:
+    eposide_duration = 1800000  
+    eval_duration = 12000000
+
+    num_episode = 0
 
     NetworkEnergyEfficiency = []
     Network_PDR = []
@@ -355,8 +446,25 @@ class ILCMAB_Config:
     NetThroughput = 0
     NetEnergyEfficiency = 0
 
-    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/ILCMAB/results"
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/EFLoRa/results"
 
+class ADR_Config:
+    Nodes_RSSI = [[] for _ in range(nrNodes)]
+
+    eposide_duration = 1800000  
+    eval_duration = 12000000
+
+    num_episode = 1000
+
+    NetworkEnergyEfficiency = []
+    Network_PDR = []
+    Network_Throughput = []
+
+    NetPDR = 0
+    NetThroughput = 0
+    NetEnergyEfficiency = 0
+
+    result_folder_path = f"/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL/ADR/results"
 
 
 def EE_Jain_Fairness_Index(nodes):

@@ -11,10 +11,17 @@ from Node import myNode, transmit, graphics_node
 from CAASI.CAASI_SF import CAASI_run
 from datetime import datetime
 from MACMAB.train import MACMAB_run
-from ILCMAB.train import ILCMAB_run
+from CDLoRa.train import CDLoRa_run
 from CoMAB.train import CoCMAB_run
 from MAConMAB.train import MAConMAB_run
-from MAB.train import MAB_run
+from DLoRa.train import DLoRa_run
+from LIWEX.train import LIWEX_run
+from MIXMAB.train import MIXMAB_run
+from NaiveMAB.train import NaiveMAB_run
+from EFLoRa.train import EFLoRa_run
+from ADR.train import ADR_run
+from plot import *
+
 class Simulation:
     def __init__(self):
         self.sum = 0
@@ -35,10 +42,7 @@ class Simulation:
         self.EEJainFairness = 0 # Jain's fairness index
         self.ThroughputJainFairness = 0
         self.ThroughputVariance = 0
-        
-        ParameterConfig.result_folder_path, self.result_file = result_file()
-
-    
+            
     def run(self):
         # generate BS
         for i in range(0,nrBS):
@@ -74,33 +78,46 @@ class Simulation:
                 if (directionality == 1):
                     node.updateRSSI()                
                 
-                if allocation_method not in ["MARL", "DALoRa", "Q-table", "MACMAB","MAConMAB","ILCMAB","CoMAB"]:
+                if allocation_method not in ["MARL", "DLoRa", "Q-table", "MACMAB","MAConMAB","CDLoRa","CoMAB","LIWEX","MIXMAB","NaiveMAB","EFLoRa","ADR"]:
                     # create a transmission process for each node
                     env.process(transmit(env,node)) 
 
             id += 1
 
-        if ParameterConfig.CASSI_flag == 1:
+        if ParameterConfig.CAASI_flag == 1:
             CAASI_run(nodes)   
 
         # ParameterConfig.packetsAtBS=[]
-         
-        
-        if allocation_method=="DALoRa":
+        if allocation_method=="DLoRa":
             set_seed(random_seed)
-            MAB_run(nodes)
+            DLoRa_run(nodes)
         elif allocation_method=="MACMAB":
             set_seed(random_seed)
             MACMAB_run(nodes)
-        elif allocation_method=="ILCMAB":
+        elif allocation_method=="CDLoRa":
             set_seed(random_seed)
-            ILCMAB_run(nodes)
+            CDLoRa_run(nodes)
         elif allocation_method=="CoMAB":
             set_seed(random_seed)
             CoCMAB_run(nodes)
         elif allocation_method=="MAConMAB":
             set_seed(random_seed)
             MAConMAB_run(nodes)
+        elif allocation_method=="LIWEX":
+            set_seed(random_seed)
+            LIWEX_run(nodes)
+        elif allocation_method=="MIXMAB":
+            set_seed(random_seed)
+            MIXMAB_run(nodes)
+        elif allocation_method=="NaiveMAB":
+            set_seed(random_seed)
+            NaiveMAB_run(nodes)
+        elif allocation_method=="EFLoRa":
+            set_seed(random_seed)
+            EFLoRa_run(nodes)
+        elif allocation_method=="ADR":
+            set_seed(random_seed)
+            ADR_run(nodes)
         else:
         # traditional algorithms do not need training stage, start simulation until simtime
             set_seed(random_seed)
@@ -111,7 +128,6 @@ class Simulation:
                 sf_distribute[node.sf_index] += 1
                 tp_distribute[node.tp_index] += 1
                 fre_distribute[node.fre_index] += 1
-
 
         # store nodes and basestation locations
         if storage_flag == 1:  
@@ -177,7 +193,6 @@ class Simulation:
         self.EEJainFairness = EE_Jain_Fairness_Index(nodes)
         self.ThroughputJainFairness = Throughput_Jain_Fairness_Index(nodes)
         self.ThroughputVariance = Throughput_Variance(nodes)
-
 
     def results_show(self):
         # print stats and save into file
@@ -279,6 +294,9 @@ class Simulation:
             #     fig_name = 'network_tropology.png'
             #     plt.savefig(os.path.join(ParameterConfig.result_folder_path, fig_name), dpi=800, bbox_inches='tight')   
 
+        sf_distribution(ParameterConfig.result_folder_path)
+        tp_distribution(ParameterConfig.result_folder_path)
+
         '''Simulation Results'''
         with open(self.result_file, 'w') as file:
             file.write('Simulation start at {}'.format(self.simstarttime))
@@ -345,8 +363,13 @@ class Simulation:
 def result_file():
      baseline_folder_path = '/home/uestc/LoRaSimulator/Joint-Parameter-Allocation-of-LoRaWAN-baesd-on-MARL' 
      results_folder_path = os.path.join(baseline_folder_path, 'Baseline_Results') # results folder stores results of different experiments
-     experiment_results_folder = datetime.now().strftime("%Y-%m-%d_%H-%M") # create a results folder for each experiment
+     #experiment_results_folder = datetime.now().strftime("%Y-%m-%d_%H-%M") # create a results folder for each experiment
+     if Channel_flag == 0:
+        experiment_results_folder = f"{allocation_method}_{nrNodes}_nodes_{radius}_m_HomoChannel"
+     else:
+        experiment_results_folder = f"{allocation_method}_{nrNodes}_nodes_{radius}_m_HeterChannel"
      experiment_results_folder_path = os.path.join(results_folder_path,experiment_results_folder)
+
      '''check whether the folder exists, if not, create it'''
      if not os.path.exists(experiment_results_folder_path):
         os.makedirs(experiment_results_folder_path)

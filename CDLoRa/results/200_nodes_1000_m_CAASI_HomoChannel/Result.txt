@@ -1,0 +1,40 @@
+--------Parameter Setting--------
+Nodes per base station: 200
+Packet generation interval: 20000 ms
+LoRa parameters allocation type: Local
+LoRa parameters allocation method: CDLoRa
+Simulation duration: 2 h
+Number of gateways: 1
+Collision check mode: Full Collision Check
+Antenna type: Directional antenna
+Number of networks: 1
+Network topology radius: 1000 m
+Packet payload size: 50
+
+--------Simulation Results--------
+Results after SF allocation before power control:
+PDR=80.594 %,Network EE=60.240 bits/mJ
+Results after power control:
+PDR=81.139 %,Network EE=60.268 bits/mJ
+--------Parameter Distribution--------
+SF=7 -> 0
+SF=8 -> 45
+SF=9 -> 66
+SF=10 -> 48
+SF=11 -> 25
+SF=12 -> 16
+Freq=868100 kHz -> 25
+Freq=868300 kHz -> 25
+Freq=868500 kHz -> 25
+Freq=868700 kHz -> 25
+Freq=868900 kHz -> 25
+Freq=869100 kHz -> 25
+Freq=869300 kHz -> 25
+Freq=869500 kHz -> 25
+TP=2 dBm -> 21
+TP=4 dBm -> 16
+TP=6 dBm -> 23
+TP=8 dBm -> 30
+TP=10 dBm -> 45
+TP=12 dBm -> 52
+TP=14 dBm -> 13

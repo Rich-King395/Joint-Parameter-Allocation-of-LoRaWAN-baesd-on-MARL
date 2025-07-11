@@ -61,49 +61,57 @@ def CAASI_run(nodes):
             nodes[nodeid_rssi[0]].fre_index = Channel_RSSI[index][0]
             print("节点",nodes[nodeid_rssi[0]].id,"分配到的信道",Channel_RSSI[index][0])
     
-    '''Action Space Initialization'''
-    # 计算最多需要多少轮（取决于最长的 node_groups）
-    max_rounds = max(len(group) for group in CASSI_Config.node_groups)
-    
-    for round_num in range(max_rounds):
-        for group in CASSI_Config.node_groups:
-            if round_num < len(group):  # 该组还有节点可用
-                CASSI_Config.nodes_transmit.append(nodes[group[round_num][0]])
-
-        for k in range(numSF):
-            for i in range(0,nrBS):
-                packetsAtBS.append([])
-            for node in CASSI_Config.nodes_transmit:
-                node.sf_index = k
-                env.process(CAASI_transmit(env, node))
-            
-            env.run(until=CASSI_Config.SF_BW_time)
-            
-            for node in CASSI_Config.nodes_transmit:
-                node.PDR = (node.packetrec / node.sent) * 100
-                '''剔除节点不合理的SF(数据包全部丢失)'''
-                # print("节点", node.id, "在SF组合为",SF[k],"下的PDR为:",node.PDR)
-                
-                if node.PDR < CASSI_Config.sf_bw_PDR_thres:
-                    if k in node.agent.sf_arms:
-                        node.agent.sf_arms.remove(k)
-                    
-                node.sent = 0
-                node.packetloss = 0
-                node.packetrec = 0
-                node.PDR = 0
-                node.collided = 0
-
-            env = simpy.Environment()       
+    if allocation_method == "ADR":
+        pass
+    else:
+        '''Action Space Initialization'''
+        # 计算最多需要多少轮（取决于最长的 node_groups）
+        max_rounds = max(len(group) for group in CASSI_Config.node_groups)
         
-        CASSI_Config.nodes_transmit = []
-     
-    '''动作空间初始化后对Q值表和计数表重新初始化'''
-    for node in nodes:
-        print("节点", node.id, "动作空间初始化后S动作空间为", node.agent.sf_arms)
-        node.agent.K_SF = len(node.agent.sf_arms)
-        node.agent.Q_SF = np.zeros(node.agent.K_SF, dtype=float)
-        node.agent.counts_SF = np.zeros(node.agent.K_SF)
+        for round_num in range(max_rounds):
+            for group in CASSI_Config.node_groups:
+                if round_num < len(group):  # 该组还有节点可用
+                    CASSI_Config.nodes_transmit.append(nodes[group[round_num][0]])
+
+            for k in range(numSF):
+                for i in range(0,nrBS):
+                    packetsAtBS.append([])
+                for node in CASSI_Config.nodes_transmit:
+                    node.sf_index = k
+                    env.process(CAASI_transmit(env, node))
+                
+                env.run(until=CASSI_Config.SF_BW_time)
+                
+                for node in CASSI_Config.nodes_transmit:
+                    node.PDR = (node.packetrec / node.sent) * 100
+                    '''剔除节点不合理的SF(数据包全部丢失)'''
+                    # print("节点", node.id, "在SF组合为",SF[k],"下的PDR为:",node.PDR)
+                    
+                    if node.PDR < CASSI_Config.sf_bw_PDR_thres:
+                        if k in node.agent.sf_arms:
+                            node.agent.sf_arms.remove(k)
+                        
+                    node.sent = 0
+                    node.packetloss = 0
+                    node.packetrec = 0
+                    node.PDR = 0
+                    node.collided = 0
+
+                env = simpy.Environment()       
+            
+            CASSI_Config.nodes_transmit = []
+        
+        '''动作空间初始化后对Q值表和计数表重新初始化'''
+        for node in nodes:
+            print("节点", node.id, "动作空间初始化后S动作空间为", node.agent.sf_arms)
+            if allocation_method == "LIWEX":
+                node.agent.K = len(node.agent.sf_arms) * len(node.agent.tp_arms)
+                node.agent.w_m = np.ones((len(node.agent.sf_arms), len(node.agent.tp_arms)))
+                node.agent.p_m = np.full((len(node.agent.sf_arms), len(node.agent.tp_arms)), 1 / node.agent.K)
+            else:
+                node.agent.K_SF = len(node.agent.sf_arms)
+                node.agent.Q_SF = np.zeros(node.agent.K_SF, dtype=float)
+                node.agent.counts_SF = np.zeros(node.agent.K_SF)
 
                                             
 def CAASI_transmit(env, node):    

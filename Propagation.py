@@ -4,6 +4,8 @@ import math
 import ParameterConfig
 from ParameterConfig import *
 
+
+
 # check for collisions at base station
 # Note: called before a packet (or rather node) is inserted into the list
 def checkcollision(packet):
@@ -101,9 +103,18 @@ def timingCollision(p1, p2):
 
 def rssi(packet,distance):
     global Lpld0
-    Lpld0 += 14*(packet.fre - Carrier_Frequency[0])/(Carrier_Frequency[7] - Carrier_Frequency[0]) 
-    Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
-    # Lpl = Lpld0+10*gamma*math.log10(distance/d0) 
+    if Channel_flag == 0:
+        Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
+    else:
+        # print("global_episode:",ParameterConfig.global_episode)
+        if ParameterConfig.global_episode < 2000:
+            # Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
+            Lpld0 -= 14*(packet.fre - 868800)/(Carrier_Frequency[7] - 868800) 
+            Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
+        else:
+            Lpld0 += 14*(packet.fre - 868800)/(Carrier_Frequency[7] - 868800) 
+            Lpl = Lpld0+10*gamma*math.log10(distance/d0) + np.random.normal(0,std)
+    
     Lpld0 = 128.95
     #  Lpl = Lpld0+10*gamma*math.log10(distance/d0)
     # print (Lpl)

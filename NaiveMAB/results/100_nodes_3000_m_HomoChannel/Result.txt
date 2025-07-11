@@ -1,0 +1,40 @@
+--------Parameter Setting--------
+Nodes per base station: 100
+Packet generation interval: 20000 ms
+LoRa parameters allocation type: Local
+LoRa parameters allocation method: NaiveMAB
+Simulation duration: 3 h
+Number of gateways: 1
+Collision check mode: Full Collision Check
+Antenna type: Directional antenna
+Number of networks: 1
+Network topology radius: 3000 m
+Packet payload size: 50
+
+--------Simulation Results--------
+Results after SF allocation before power control:
+PDR=77.776 %,Network EE=12.724 bits/mJ
+Results after power control:
+PDR=77.743 %,Network EE=12.417 bits/mJ
+--------Parameter Distribution--------
+SF=7 -> 0
+SF=8 -> 2
+SF=9 -> 19
+SF=10 -> 35
+SF=11 -> 21
+SF=12 -> 23
+Freq=868100 kHz -> 12
+Freq=868300 kHz -> 14
+Freq=868500 kHz -> 9
+Freq=868700 kHz -> 15
+Freq=868900 kHz -> 14
+Freq=869100 kHz -> 11
+Freq=869300 kHz -> 13
+Freq=869500 kHz -> 12
+TP=2 dBm -> 0
+TP=4 dBm -> 0
+TP=6 dBm -> 0
+TP=8 dBm -> 1
+TP=10 dBm -> 2
+TP=12 dBm -> 3
+TP=14 dBm -> 94

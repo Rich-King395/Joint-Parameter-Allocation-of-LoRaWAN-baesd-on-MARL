@@ -1,0 +1,5 @@
+episode=0 PDR=35.57 EE=21.38
+episode=1 PDR=45.04 EE=24.47
+episode=2 PDR=48.79 EE=26.05
+episode=3 PDR=49.79 EE=26.37
+episode=4 PDR=51.77 EE=27.80

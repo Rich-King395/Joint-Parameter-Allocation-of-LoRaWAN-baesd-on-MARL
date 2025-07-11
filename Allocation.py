@@ -10,13 +10,14 @@ def random_allocation():
     # sf = 7
     # fre = 868100
     bw = 0
-    tp = 6
+    tp = random.randint(0,6)
+    # tp = 6
     # tp = random.choice(Transmission_Power)
     # bw = random.choice([125,250,500])
     return sf,fre,bw,tp
 
 def uniform_allocation():
-    sf = 7
+    sf = 9
     fre = 868100
     bw = 125
     tp = 14
